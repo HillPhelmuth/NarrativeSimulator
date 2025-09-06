@@ -1,0 +1,57 @@
+@using NarrativeSimulator.Core.Models
+
+<EditForm Model="_form" OnValidSubmit="SubmitAsync" class="panel create-agents">
+    <DataAnnotationsValidator />
+    <div class="panel-header">
+        <div class="panel-title">
+            <div class="title-icon"></div>
+            <h3>Create Agents</h3>
+        </div>
+    </div>
+    <div class="form-body">
+        <ValidationSummary class="validation-summary" />
+        <div class="form-grid">
+            <div class="field">
+                <label>World Type</label>
+                <InputRadioGroup @bind-Value="_form.WorldType" class="radio-group">
+                    <div class="radio-option">
+                        <InputRadio Value="WorldType.RealWorld" />
+                        <span>Real World / Contemporary</span>
+                    </div>
+                    <div class="radio-option">
+                        <InputRadio Value="WorldType.Fictional" />
+                        <span>Fictional / Custom Setting</span>
+                    </div>
+                </InputRadioGroup>
+            </div>
+            <div class="field span-2">
+                <label for="prompt">Base World / Team Prompt<span class="req">*</span></label>
+                <InputTextArea id="prompt" @bind-Value="_form.Prompt" class="text-input textarea" rows="4" placeholder="Describe the context, project, or scenario the agents exist within..."/>
+                <ValidationMessage For="() => _form.Prompt"/>
+            </div>
+
+
+
+            @if (_form.WorldType == WorldType.Fictional)
+            {
+                <div class="field span-2 fade-in">
+                    <label for="fictionalDesc">Fictional World Description</label>
+                    <InputTextArea id="fictionalDesc" @bind-Value="_form.FictionalWorldDescription" class="text-input textarea" rows="3" placeholder="Describe geography, technology level, factions, tone, stakes..."/>
+                    <small class="hint">Used to ground agent personalities and goals in this setting.</small>
+                </div>
+            }
+
+            <div class="field">
+                <label for="numAgents">Number of Agents</label>
+                <InputNumber id="numAgents" @bind-Value="_form.NumberOfAgents" class="text-input" min="1" max="12"/>
+                <small class="hint">1 - 12</small>
+                <ValidationMessage For="() => _form.NumberOfAgents"/>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Generate Agents</button>
+            </div>
+        </div>
+
+        
+    </div>
+</EditForm>

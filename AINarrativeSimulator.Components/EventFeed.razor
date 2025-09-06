@@ -1,0 +1,67 @@
+﻿@using System.Linq
+
+
+@* Parameters *@
+
+<div class="panel event-feed">
+    <div class="panel-header">
+        <div class="panel-title">
+            <span class="status-icon"></span>
+            <h3>Live Event Feed</h3>
+            <div class="live-indicator">
+                <span class="dot"></span>
+                <span>Live</span>
+            </div>
+        </div>
+        <div class="count">@Actions.Count() events</div>
+    </div>
+
+    <div @ref="_feedDiv" class="feed-scroll">
+        @if (!Actions.Any())
+        {
+            <div class="empty">
+                <div class="empty-icon"></div>
+                <p>The simulation is starting up...</p>
+                <p class="hint">Agents are beginning to interact</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var action in Actions)
+            {
+                <div class="action-card @GetActionTypeClass(action.Type)">
+                    <div class="action-icon"></div>
+                    <div class="action-main">
+                        <div class="action-top">
+                            <div class="action-description">@action.BriefDescription</div>
+                            <button type="button"
+                                    class="ef-toggle"
+                                    aria-expanded="@(_expandedAction == action)"
+                                    title="View details"
+                                    @onclick="(() => ToggleExpand(action))">
+                                <span class="ef-toggle-text">@(_expandedAction == action ? "Hide" : "Details")</span>
+                                <span class="ef-chevron">@(_expandedAction == action ? "▲" : "▼")</span>
+                            </button>
+                        </div>
+                        @if (_expandedAction == action)
+                        {
+                            <div class="action-body">
+                                <div class="action-head">
+                                    <div class="meta">
+                                        @*  @((MarkupString)MarkdownAsHtml(action.ToTypeMarkdown().Item2)) *@
+                                        @action.ToTypeMarkdown().Item2
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+   
+   
+}

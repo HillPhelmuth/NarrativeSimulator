@@ -1,0 +1,115 @@
+
+
+<div class="app-shell">
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-row">
+                <div class="brand">
+                    <div class="brand-icon"></div>
+                    <div>
+                        <h1 class="brand-title">The Emergent Narrative Simulator</h1>
+                        <p class="brand-subtitle">@WorldState.Name - @WorldState.Description</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="tech-badge">
+                        <span class="spark"></span>
+                        <span>Living World Technology</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" @onclick="OpenSummaryModal">Generate World Summary</button>
+                        <button class="btn btn-secondary" @onclick="ToggleWorldPanel">@(_showWorldController ? "Hide World Controller" : "Show World Controller")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container main-content">
+        <div class="main-grid @( _showWorldController ? string.Empty : "no-right")" @ref="_grid">
+            <!-- Left Column - Event Feed -->
+            <div class="col">
+                <div class="view-toggle" title="Toggle between Beats and Events">
+                    <label class="switch">
+                        <input type="checkbox" aria-label="Toggle view" @bind="_showComics" />
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-text">@(_showComics ? "Beats" : "Events")</span>
+                </div>
+                @if (_showComics)
+                {
+                    <BeatTicker Beats="WorldState.Beats"></BeatTicker>
+                }
+                else
+                {
+                    <EventFeed Actions="@_actions" />
+                }
+                @* <EventFeed Actions="@_actions"/> *@
+            </div>
+            <!-- Gutter between col 1 and 2 -->
+            <div class="gutter" data-gutter="1" aria-hidden="true"></div>
+
+            <!-- Middle Column - Agent Inspector -->
+            <div class="col">
+                <AgentInspector Agents="@_agents" SelectedAgentId="@selectedAgentId" SelectedAgentIdChanged="@OnSelectedAgentChanged" />
+            </div>
+
+            @if (_showWorldController)
+            {
+                <!-- Gutter between col 2 and 3 -->
+                <div class="gutter" data-gutter="2" aria-hidden="true"></div>
+                <!-- Right Column - World Controller -->
+                <div class="col">
+                    <WorldController IsRunning="@isRunning"
+                                     OnStart="@HandleStart"
+                                     OnStop="@HandleStop"
+                                     OnReset="@HandleReset"
+                                     InjectRumor="@HandleInjectRumor"
+                                     InjectEvent="@HandleInjectEvent"
+                                     WorldState="@WorldState" />
+                </div>
+            }
+        </div>
+
+        <!-- Description Panel -->
+       
+    </main>
+
+    <!-- Subtle background effect -->
+    <div class="bg-stripe" aria-hidden="true"></div>
+</div>
+
+@if (_showSummaryModal)
+{
+    <div class="modal-backdrop" @onclick="CloseSummaryModal">
+        <div class="modal-card" @onclick:stopPropagation>
+            <div class="modal-header">
+                <div class="modal-title">World Summary</div>
+                <button class="btn-close" @onclick="CloseSummaryModal">×</button>
+            </div>
+            <div class="modal-body">
+                @if (_isSummarizing)
+                {
+                    <div class="loading">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Generating...</span>
+                        </div>
+                        <span>Generating summary...</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="markdown" style="max-height:50vh; overflow:auto;">
+                        @((MarkupString)MarkdownAsHtml(_summary ?? string.Empty))
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="CloseSummaryModal">Close</button>
+                <button class="btn btn-primary" @onclick="GenerateSummary">Regenerate</button>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>5e4805cd-4fe2-4d13-bfbe-030fa4edeafa</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AINarrativeSimulator.Components\AINarrativeSimulator.Components.csproj" />
+  </ItemGroup>
+
+</Project>
