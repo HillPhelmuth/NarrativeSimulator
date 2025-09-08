@@ -10,30 +10,30 @@
                 <span class="toggle-text">Use a preset agent group</span>
             </label>
         </div>
-
-        @if (_usePresetGroup)
-        {
-            <div class="preset-panel @( _isGenerating ? "disabled" : string.Empty)">
-                <h3 class="preset-title">Select a Preset Group</h3>
-                <div class="preset-list">
-                    @foreach (var g in _presetGroups)
-                    {
-                        <button type="button" class="preset-item" @onclick="() => SelectPreset(g)" disabled="@_isGenerating">
-                            <div class="preset-item-header">
-                                <span class="preset-name">@g.Name</span>
-                                <span class="preset-count">@g.AgentCount agents</span>
-                            </div>
-                            <p class="preset-desc">@g.Description</p>
-                        </button>
-                    }
+        <div>
+            @if (_usePresetGroup)
+            {
+                <div class="preset-panel @( _isGenerating ? "disabled" : string.Empty)">
+                    <h3 class="preset-title">Select a Preset Group</h3>
+                    <div class="preset-list">
+                        @foreach (var g in _presetGroups)
+                        {
+                            <button type="button" class="preset-item" @onclick="() => SelectPreset(g)" disabled="@_isGenerating">
+                                <div class="preset-item-header">
+                                    <span class="preset-name">@g.Name</span>
+                                    <span class="preset-count">@g.AgentCount agents</span>
+                                </div>
+                                <p class="preset-desc">@g.Description</p>
+                            </button>
+                        }
+                    </div>
                 </div>
-            </div>
-        }
-        else
-        {
-            <CreateAgentsForm OnCreateAgents="CreateAgents" />
-        }
-
+            }
+            else
+            {
+                <CreateAgentsForm OnCreateAgents="CreateAgents" />
+            }
+        </div>
         <div class="desc-panel">
             <h2 class="desc-title">
                 <span class="desc-icon"></span>
@@ -41,19 +41,45 @@
             </h2>
             <div class="desc-grid">
                 <div>
-                    <h3 class="desc-h3">Emergent Narratives</h3>
-                    <p>Watch as autonomous AI agents create their own stories through interactions, without any predetermined script. Each agent has unique personalities, relationships, and hidden knowledge.</p>
+                    <h3 class="desc-h3">Emergent Narrative Loop</h3>
+                    <p>Autonomous agents reason every few seconds. The orchestrator selects the next speaker, executes tool calls (state + memory updates) and appends structured actions to the world timeline.</p>
                 </div>
                 <div>
-                    <h3 class="desc-h3">Real-time Reasoning</h3>
-                    <p>Every few seconds, each agent perceives their environment and makes decisions based on their personality, goals, and memories. The story unfolds organically through their autonomous choices.</p>
+                    <h3 class="desc-h3">Preset Casts or Generated Worlds</h3>
+                    <p>Start instantly with curated scenario casts (family, software team, infiltration, etc.) or generate a fresh world with a custom prompt & real vs fictional context settings.</p>
                 </div>
                 <div>
-                    <h3 class="desc-h3">Interactive Catalyst</h3>
-                    <p>As the observer, you can introduce rumors, events, or environmental changes that serve as catalysts for new narrative directions, but you cannot directly control the agents.</p>
+                    <h3 class="desc-h3">Beats & Higher-Level Summaries</h3>
+                    <p>Recent atomic actions are periodically distilled into dramatic beats giving you a higher-level pulse of the unfolding story. Generate an on-demand world summary at any time.</p>
                 </div>
+                <div>
+                    <h3 class="desc-h3">Personality Profiling</h3>
+                    <p>Agents receive Big Five personality scores (Sentino API) on first inspection. Comparative visualization helps interpret group dynamics and potential tensions.</p>
+                </div>
+                <div>
+                    <h3 class="desc-h3">Rumors & World Events</h3>
+                    <p>Inject narrative catalysts. Added rumors and global events are fed back into future reasoning cycles, nudging direction without direct agent control.</p>
+                </div>
+                @* <div>
+                    <h3 class="desc-h3">Resizable Insight Dashboard</h3>
+                    <p>Three-column layout (Events / Agents / World) can be resized & minimized. Toggle between raw events and beats, or between agent details and personality dashboard views.</p>
+                </div> *@
+                <div>
+                    <h3 class="desc-h3">Fast as Hell LLM Orchestration</h3>
+                    <p>OpenRouter calls include provider targeting Cerebras and Grok.</p>
+                </div>
+                @* <div>
+                    <h3 class="desc-h3">Local Session Persistence</h3>
+                    <p>Light snapshots of agents & world state are periodically cached to your browser storage to aid restart / inspection during experimentation.</p>
+                </div> *@
+                @* <div>
+                    <h3 class="desc-h3">Extensible Tooling</h3>
+                    <p>World mutations use Semantic Kernel plugin functions. Add new actions or scoring services and surface them through the same orchestration path.</p>
+                </div> *@
             </div>
-
+            <div class="desc-highlight" role="note">
+                <strong>Tip:</strong> Generate or load agents, then open the World Controller and press <em>Start</em> to let the story begin. Inject a rumor if the loop feels quiet to provoke new dynamics.
+            </div>
         </div>
     </div>
 

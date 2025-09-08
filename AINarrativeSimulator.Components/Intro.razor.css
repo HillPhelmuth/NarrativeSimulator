@@ -1,11 +1,14 @@
 /* Description */
 .desc-panel {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     background: rgba(17,24,39,.5);
     border: 1px solid #374151;
     border-radius: .5rem;
-    padding: 1.5rem;
+    padding: 1rem;
     color: #e5e7eb;
+    /*height:100vh;*/
+    overflow:auto;
+    scrollbar-width: thin;
 }
 
 /* Busy overlay */
@@ -84,9 +87,11 @@
     color: #67e8f9;
 }
 .app-shell {
-    min-height: 100vh;
+    height: 100vh;
     background: linear-gradient(135deg,#111827,#000,#111827);
     position: relative;
+    overflow: auto;
+    scrollbar-width: thin;
 }
 
 /* Centering container similar width to other forms */
@@ -94,6 +99,8 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 1.5rem 2rem;
+    /*display: grid;
+    grid-template-columns: 1fr 1fr;*/
 }
 
 .mode-toggle {
