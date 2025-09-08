@@ -11,18 +11,30 @@
     <div class="form-body">
         <ValidationSummary class="validation-summary" />
         <div class="form-grid">
-            <div class="field">
-                <label>World Type</label>
-                <InputRadioGroup @bind-Value="_form.WorldType" class="radio-group">
-                    <div class="radio-option">
-                        <InputRadio Value="WorldType.RealWorld" />
-                        <span>Real World / Contemporary</span>
-                    </div>
-                    <div class="radio-option">
-                        <InputRadio Value="WorldType.Fictional" />
-                        <span>Fictional / Custom Setting</span>
-                    </div>
-                </InputRadioGroup>
+            <div style="display:flex;flex-direction:row; justify-content:space-between">
+                <div class="field">
+                    <label>World Type</label>
+                    <InputRadioGroup @bind-Value="_form.WorldType" class="radio-group">
+                        <div class="radio-option">
+                            <label>
+                                <InputRadio Value="WorldType.RealWorld" />
+                                <span>Real World / Contemporary</span>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <label>
+                                <InputRadio Value="WorldType.Fictional" />
+                                <span>Fictional / Custom Setting</span>
+                            </label>
+                        </div>
+                    </InputRadioGroup>
+                </div>
+                <div class="field" style="width:50%">
+                    <label for="numAgents">Number of Agents</label>
+                    <InputNumber id="numAgents" @bind-Value="_form.NumberOfAgents" class="number-input" min="1" max="12" />
+                    <small class="hint">1 - 12</small>
+                    <ValidationMessage For="() => _form.NumberOfAgents" />
+                </div>
             </div>
             <div class="field span-2">
                 <label for="prompt">Base World / Team Prompt<span class="req">*</span></label>
@@ -41,12 +53,7 @@
                 </div>
             }
 
-            <div class="field">
-                <label for="numAgents">Number of Agents</label>
-                <InputNumber id="numAgents" @bind-Value="_form.NumberOfAgents" class="text-input" min="1" max="12"/>
-                <small class="hint">1 - 12</small>
-                <ValidationMessage For="() => _form.NumberOfAgents"/>
-            </div>
+           
             <div class="actions">
                 <button type="submit" class="btn btn-primary">Generate Agents</button>
             </div>

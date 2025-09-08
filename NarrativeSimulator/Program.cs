@@ -1,3 +1,4 @@
+using ApexCharts;
 using Blazored.LocalStorage;
 using NarrativeSimulator.Components;
 using NarrativeSimulator.Core.Helpers;
@@ -8,7 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddNarrativeServices();
+builder.Services.AddSentinoClient(opts =>
+{
+    opts.BaseUrl = "https://sentino.p.rapidapi.com";
+    opts.ApiKey = builder.Configuration["Sentino:ApiKey"] ?? string.Empty;
+});
+builder.Services.AddSymantoClient(opts =>
+{
+    opts.ApiKey = builder.Configuration["Sentino:ApiKey"] ?? string.Empty;
+});
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddApexCharts();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

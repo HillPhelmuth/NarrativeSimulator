@@ -1,25 +1,22 @@
-
-
-<div class="app-shell">
+﻿<div class="app-shell">
     <!-- Header -->
     <header class="site-header">
         <div class="container">
             <div class="header-row">
                 <div class="brand">
-                    <div class="brand-icon"></div>
+                    <div class="brand-icon" title="home" @onclick="@(() => Navigation.NavigateTo("/"))"><img src="NarrativeZooAppIcon.jpeg" height="32" width="32" /></div>
                     <div>
                         <h1 class="brand-title">The Emergent Narrative Simulator</h1>
                         <p class="brand-subtitle">@WorldState.Name - @WorldState.Description</p>
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="tech-badge">
+                    @* <div class="tech-badge">
                         <span class="spark"></span>
                         <span>Living World Technology</span>
-                    </div>
+                    </div> *@
                     <div class="header-actions">
                         <button class="btn btn-primary" @onclick="OpenSummaryModal">Generate World Summary</button>
-                        <button class="btn btn-secondary" @onclick="ToggleWorldPanel">@(_showWorldController ? "Hide World Controller" : "Show World Controller")</button>
                     </div>
                 </div>
             </div>
@@ -28,40 +25,70 @@
 
     <!-- Main Content -->
     <main class="container main-content">
-        <div class="main-grid @( _showWorldController ? string.Empty : "no-right")" @ref="_grid">
-            <!-- Left Column - Event Feed -->
-            <div class="col">
-                <div class="view-toggle" title="Toggle between Beats and Events">
-                    <label class="switch">
-                        <input type="checkbox" aria-label="Toggle view" @bind="_showComics" />
-                        <span class="slider"></span>
-                    </label>
-                    <span class="toggle-text">@(_showComics ? "Beats" : "Events")</span>
-                </div>
-                @if (_showComics)
+        <div class="main-grid" style="--col1:@Col1Size; --col2:@Col2Size; --col3:@Col3Size;" @ref="_grid">
+            <!-- Left Column - Event Feed / Beats -->
+            <div class="col @( _minCol1 ? "minimized" : string.Empty)">
+                @if (!_minCol1)
                 {
-                    <BeatTicker Beats="WorldState.Beats"></BeatTicker>
+                    <button class="mini-toggle" title="Minimize" @onclick="() => ToggleCol(1)">–</button>
+                    <div class="view-toggle" title="Toggle between Beats and Events">
+                        <label class="switch">
+                            <input type="checkbox" aria-label="Toggle view" @bind="_showComics" />
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-text">@(_showComics ? "Beats" : "Events")</span>
+                    </div>
+                    @if (_showComics)
+                    {
+                        <BeatTicker Beats="WorldState.Beats"></BeatTicker>
+                    }
+                    else
+                    {
+                        <EventFeed Actions="@_actions" />
+                    }
                 }
                 else
                 {
-                    <EventFeed Actions="@_actions" />
+                    <div class="minimized-indicator" title="Restore Events/Beats" @onclick="() => ToggleCol(1)">Events ▸</div>
                 }
-                @* <EventFeed Actions="@_actions"/> *@
             </div>
             <!-- Gutter between col 1 and 2 -->
             <div class="gutter" data-gutter="1" aria-hidden="true"></div>
 
             <!-- Middle Column - Agent Inspector -->
-            <div class="col">
-                <AgentInspector Agents="@_agents" SelectedAgentId="@selectedAgentId" SelectedAgentIdChanged="@OnSelectedAgentChanged" />
+            <div class="col @( _minCol2 ? "minimized" : string.Empty)">
+                @if (!_minCol2)
+                {
+                    <button class="mini-toggle" title="Minimize" @onclick="() => ToggleCol(2)">–</button>
+                    <div class="view-toggle" style="z-index:100" title="Toggle between Details and Personality Dashboard">
+                        <label class="switch">
+                            <input type="checkbox" aria-label="Toggle view" @bind="_showPersonalityDash" />
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-text">@(_showPersonalityDash ? "Big-5" : "Details")</span>
+                    </div>
+                    @if (_showPersonalityDash)
+                    {
+                        <PersonalityDashboard />
+                    }
+                    else
+                    {
+                        <AgentInspector Agents="@WorldState.WorldAgents?.Agents" SelectedAgentId="@selectedAgentId" SelectedAgentIdChanged="@OnSelectedAgentChanged"/>
+                    }
+                }
+                else
+                {
+                    <div class="minimized-indicator" title="Restore Agent Inspector" @onclick="() => ToggleCol(2)">Agents ▸</div>
+                }
             </div>
 
-            @if (_showWorldController)
-            {
-                <!-- Gutter between col 2 and 3 -->
-                <div class="gutter" data-gutter="2" aria-hidden="true"></div>
-                <!-- Right Column - World Controller -->
-                <div class="col">
+            <!-- Gutter between col 2 and 3 -->
+            <div class="gutter" data-gutter="2" aria-hidden="true"></div>
+            <!-- Right Column - World Controller -->
+            <div class="col @( _minCol3 ? "minimized" : string.Empty)">
+                @if (!_minCol3)
+                {
+                    <button class="mini-toggle" title="Minimize" @onclick="() => ToggleCol(3)">–</button>
                     <WorldController IsRunning="@isRunning"
                                      OnStart="@HandleStart"
                                      OnStop="@HandleStop"
@@ -69,8 +96,12 @@
                                      InjectRumor="@HandleInjectRumor"
                                      InjectEvent="@HandleInjectEvent"
                                      WorldState="@WorldState" />
-                </div>
-            }
+                }
+                else
+                {
+                    <div class="minimized-indicator" title="Restore World Controller" @onclick="() => ToggleCol(3)">World ▸</div>
+                }
+            </div>
         </div>
 
         <!-- Description Panel -->
@@ -87,7 +118,7 @@
         <div class="modal-card" @onclick:stopPropagation>
             <div class="modal-header">
                 <div class="modal-title">World Summary</div>
-                <button class="btn-close" @onclick="CloseSummaryModal">�</button>
+                <button class="btn-close" @onclick="CloseSummaryModal">×</button>
             </div>
             <div class="modal-body">
                 @if (_isSummarizing)

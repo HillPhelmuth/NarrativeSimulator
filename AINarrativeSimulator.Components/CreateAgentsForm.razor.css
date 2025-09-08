@@ -8,14 +8,15 @@
 }
 
 .panel.create-agents .panel-header {
-    padding: 1rem;
-    border-bottom: 1px solid #374151;
+    padding: .5rem;
+    /*border-bottom: 1px solid #374151;*/
     
 }
 
 .panel.create-agents .panel-title {
     display: flex;
     align-items: center;
+    justify-content:center;
     gap: .5rem;
     
 }
@@ -91,7 +92,15 @@
         color: #ef4444;
         margin-left: .25rem;
     }
-
+::deep .number-input {
+    padding: .65rem .75rem;
+    background: #1f2937;
+    border: 1px solid #4b5563;
+    border-radius: .5rem;
+    color: #fff;
+    font-size: .875rem;
+    resize: vertical;
+}
 ::deep .text-input {
     width: 100%;
     padding: .65rem .75rem;
@@ -103,7 +112,7 @@
     resize: vertical;
 }
 
-    ::deep .text-input:focus {
+    ::deep .text-input:focus, .number-input:focus {
         outline: 2px solid #2563eb;
         outline-offset: 1px;
     }

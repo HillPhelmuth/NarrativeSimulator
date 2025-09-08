@@ -1,0 +1,46 @@
+<div class="personality-dash">
+    <!-- Toolbar -->
+    <div class="dash-toolbar card">
+        <div class="toolbar-left">
+            <h2 class="title">Personality Overview</h2>
+            <div class="legend">
+                <span class="dot low"></span><span>Low</span>
+                <span class="dot typical"></span><span>Typical</span>
+                <span class="dot high"></span><span>High</span>
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <label class="picker-label">Agent</label>
+            <select class="picker" @bind="_agentId" @bind:after="OnAfterAgentSelected" disabled="@(WorldState.AgentPersonalityAssessment is null)">
+                @foreach (var id in AgentIds)
+                {
+                    <option value="@id">@id</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <!-- Grid of charts -->
+    @if (WorldState.AgentPersonalityAssessment is not null)
+    {
+        <div class="dash-grid">
+            <div class="card">
+                <IndividualPersonalityPanel Data="WorldState.AgentPersonalityAssessment" AgentId="@_agentId"></IndividualPersonalityPanel>
+            </div>
+            <div class="card">
+                <TeamPersonalityPanel Data="WorldState.AgentPersonalityAssessment"></TeamPersonalityPanel>
+            </div>
+            <div class="card">
+                @((MarkupString)MarkdownAsHtml(WorldState.AgentPersonalityAssessment.LlmGroupWriteUp!))
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card loading-card" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <div class="loading-text">Generating personality assessment...</div>
+            <div class="loading-subtext">Scoring each agent's Big Five traits and synthesizing group write-up. This can take a little while on first load.</div>
+        </div>
+    }
+</div>

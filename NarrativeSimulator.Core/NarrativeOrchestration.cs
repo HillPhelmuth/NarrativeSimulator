@@ -1,15 +1,17 @@
-﻿using System.ComponentModel;
-using System.Text.Json;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using NarrativeSimulator.Core.Helpers;
 using NarrativeSimulator.Core.Models;
+using NarrativeSimulator.Core.Models.PsychProfile;
 using NarrativeSimulator.Core.Plugins;
 using NarrativeSimulator.Core.Services;
+using System.ComponentModel;
+using System.Text.Json;
 
 #pragma warning disable SKEXP0001
 
@@ -28,6 +30,8 @@ public interface INarrativeOrchestration
         OpenAIPromptExecutionSettings? settings = null, CancellationToken ct = default);
 
     Task<WorldAgents?> GenerateAgents(string input, int numberOfAgents = 3);
+    Task<(string, SentinoBig5?)> GeneratePersonalityScores(WorldAgent agent);
+    Task<AgentPersonalityAssessment> GenerateAllPersonalityScores();
 }
 
 public class NarrativeOrchestration : INarrativeOrchestration
@@ -42,15 +46,19 @@ public class NarrativeOrchestration : INarrativeOrchestration
     private readonly ILogger<NarrativeOrchestration> _logger;
     public event Action<string, string>? OnAgentFunctionCompleted;
     private Dictionary<string, int> _agentParticipationCount = [];
-    public NarrativeOrchestration(ILoggerFactory loggerFactory, IConfiguration configuration, WorldState worldState)
+    private readonly ISentinoClient _sentinoClient;
+    private readonly ISymantoClient _symantoClient;
+    public NarrativeOrchestration(ILoggerFactory loggerFactory, IConfiguration configuration, WorldState worldState, ISentinoClient sentinoClient, ISymantoClient symantoClient)
     {
         _loggerFactory = loggerFactory;
         _configuration = configuration;
         _worldState = worldState;
+        _sentinoClient = sentinoClient;
+        _symantoClient = symantoClient;
         _autoInvocationFilter.OnAfterInvocation += HandleAutoInvocationFilterAfterInvocation;
         _functionInvocationFilter.OnAfterInvocation += HandleFunctionInvocationFilterAfterInvocation;
         _logger = loggerFactory.CreateLogger<NarrativeOrchestration>();
-        _agentParticipationCount = _worldState.WorldAgents.Agents.ToDictionary(a => a.AgentId, _ => 0);
+        _agentParticipationCount = _worldState.WorldAgents?.Agents.ToDictionary(a => a.AgentId, _ => 0) ?? [];
     }
 
     private void HandleFunctionInvocationFilterAfterInvocation(FunctionInvocationContext functionInvocationContext)
@@ -110,6 +118,7 @@ public class NarrativeOrchestration : INarrativeOrchestration
     {
 
         //_history.AddUserMessage(userInput);
+        _agentParticipationCount = _worldState.WorldAgents?.Agents.ToDictionary(a => a.AgentId, _ => 0) ?? [];
         var errors = 0;
         while (true)
         {
@@ -152,14 +161,94 @@ public class NarrativeOrchestration : INarrativeOrchestration
 
     }
 
-    public async Task<T?> ExecuteLlmPrompt<T>(string inputPrompt, string model = "openai/gpt-oss-20b", CancellationToken ct = default)
+    public async Task<(string, SentinoBig5?)> GeneratePersonalityScores(WorldAgent agent)
     {
-        var executionSettings = new OpenAIPromptExecutionSettings() { ResponseFormat = typeof(T) };
-        Console.WriteLine($"Execution settings for generic type prompt:\n\n{typeof(T).Name})");
-        var response = await ExecuteLlmPrompt(inputPrompt, model,
-            executionSettings, ct);
-        var json = StripCodeFences(response);
-        return JsonSerializer.Deserialize<T>(json);
+        var kernel = CreateKernel("openai/gpt-oss-20b");
+        var sp = agent.GetSystemPrompt();
+        var settings = new OpenAIPromptExecutionSettings() { ReasoningEffort = "low", ChatSystemPrompt = sp };
+        var response = await kernel.InvokePromptAsync<string>(AgentPersonalityPrompt, new KernelArguments(settings));
+        var request = new SentinoScoreRequest() { Text = response ?? agent.Prompt };
+        var personality = await _sentinoClient.ScoreTextAsync(request);
+        return (agent.AgentId, personality.Scoring?.Big5);
+    }
+
+    public async Task<AgentPersonalityAssessment> GenerateAllPersonalityScores()
+    {
+
+        var agents = _worldState.WorldAgents!.Agents;
+        var agentIds = agents.Select(x => x.AgentId);
+        var cachedScores = _worldState.AgentPersonalityAssessment?.AgentPersonalities ?? [];
+        var missingScores = agentIds.Except(cachedScores.Keys).ToList();
+        if (missingScores.Count == 0) return _worldState.AgentPersonalityAssessment!;
+        var requests = new List<SymantoScoreRequest>();
+        var results = new Dictionary<string, SentinoBig5>();
+        var kernel = CreateKernel("openai/gpt-oss-20b");
+        List<Task<SymantoScoreRequest>> scoreRequestTasks = [];
+        var attempts = 0;
+        scoreRequestTasks.AddRange(agents.Select(SymantoScoreRequestTask));
+        requests = (await Task.WhenAll(scoreRequestTasks)).ToList();
+
+        var resultScores = await _symantoClient.ScoreTextsAsync(requests);
+        var facetResults = new Dictionary<string, Dictionary<string, double>>();
+        foreach (var score in resultScores)
+        {
+            if (score?.Id == null) continue;
+            results[score.Id] = score.Scores?.Scoring?.Big5 ?? new SentinoBig5();
+            facetResults[score.Id] = score.FacetScoreMap ?? [];
+        }
+
+        var interpreter = new BigFiveInterpreter();
+
+        var assessment = new AgentPersonalityAssessment
+        {
+            AgentPersonalities = results,
+            AgentPersonalityWriteups = results.ToDictionary(kv => kv.Key, kv => interpreter.Interpret(kv.Value)),
+            TeamPersonalityReport = interpreter.InterpretTeam(results),
+            AgentFacetScoreMap = facetResults
+        };
+        Console.WriteLine(
+            $"Assessment Scores: \n=======================\n{JsonSerializer.Serialize(assessment, new JsonSerializerOptions() { WriteIndented = true })}\n===================\n");
+        var prompt = """
+                     Given the following individual personality writeups and the active goal, task, or concept of the group, create a cohesive and engaging report on the group. Highlight interesting dynamics, potential conflicts, and how their personalities might influence their interactions. Write in an engaging narrative style.
+                     ## Complete Agent Group Personality Writeups
+                     
+                     {{ $fullAssessment }}
+                     
+                     ## Group Purpose or Concept
+                     
+                     {{ $description }}
+                     """;
+        var writeUpsettings = new OpenAIPromptExecutionSettings()
+            { ChatSystemPrompt = Prompts.PersonalityAnalysisCheatSheet };
+        var args = new KernelArguments(writeUpsettings)
+        {
+            ["fullAssessment"] = assessment.ToMarkdown(),
+            ["description"] = _worldState.WorldAgents.Description
+        };
+        var assKernel = CreateKernel();
+        assessment.LlmGroupWriteUp = await assKernel.InvokePromptAsync<string>(prompt, args);
+        _worldState.AgentPersonalityAssessment = assessment;
+        return assessment;
+
+        async Task<SymantoScoreRequest> SymantoScoreRequestTask(WorldAgent agent)
+        {
+            try
+            {
+                var sp = agent.GetSystemPrompt();
+                var settings = new OpenAIPromptExecutionSettings() { ReasoningEffort = "low", ChatSystemPrompt = sp };
+                var response =
+                    await kernel.InvokePromptAsync<string>(AgentPersonalityPrompt, new KernelArguments(settings));
+                var request = new SymantoScoreRequest(agent.AgentId, response ?? agent.Prompt);
+                return request;
+            }
+            catch (Exception ex)
+            {
+                attempts++;
+                _logger.LogError(ex, "Error generating personality score for agent {AgentId}", agent.AgentId);
+                if (attempts > 3) return new SymantoScoreRequest(agent.AgentId, agent.Prompt);
+                return await SymantoScoreRequestTask(agent);
+            }
+        }
     }
 
     public async Task<string?> ExecuteLlmPrompt(string inputPrompt, string model = "openai/gpt-oss-20b",
@@ -173,57 +262,95 @@ public class NarrativeOrchestration : INarrativeOrchestration
         s = s.Replace("```json", "").Replace("```", "");
         return s.Trim();
     }
+
+    private int _agentGenAttempts;
     public async Task<WorldAgents?> GenerateAgents(string input, int numberOfAgents = 3)
     {
-        var kernel = CreateKernel();
-        var prompt = $"Create {numberOfAgents} that fit the following description:\n\n## Description\n\n{input}";
-        var settings = new OpenAIPromptExecutionSettings()
-            { ResponseFormat = typeof(WorldAgents), ChatSystemPrompt = Prompts.CreateAgentsPrompt, ReasoningEffort = "high" };
-        var result = await kernel.InvokePromptAsync<string>(prompt, new KernelArguments(settings));
-        var worldAgents = JsonSerializer.Deserialize<WorldAgents>(result ?? "");
-        _agentParticipationCount = worldAgents?.Agents.ToDictionary(a => a.AgentId, _ => 0) ?? [];
-        return worldAgents;
+        try
+        {
+            var kernel = CreateKernel();
+            var prompt = $"Create {numberOfAgents} that fit the following description:\n\n## Description\n\n{input}";
+            var settings = new OpenAIPromptExecutionSettings()
+            {
+                ResponseFormat = typeof(WorldAgents), ChatSystemPrompt = Prompts.CreateAgentsPrompt,
+                ReasoningEffort = "high"
+            };
+            var result = await kernel.InvokePromptAsync<string>(prompt, new KernelArguments(settings));
+            var worldAgents = JsonSerializer.Deserialize<WorldAgents>(result ?? "");
+            _agentParticipationCount = worldAgents?.Agents.ToDictionary(a => a.AgentId, _ => 0) ?? [];
+            return worldAgents;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating agents");
+            if (_agentGenAttempts >= 3) return null;
+            _agentGenAttempts++;
+            return await GenerateAgents(input, numberOfAgents);
+        }
     }
     private async Task UpdateAgentStates(string updateDynamicStatePrompt, string updateMemoryPrompt, CancellationToken ct)
     {
         var smallKernel = CreateKernel("openai/gpt-oss-20b");
         smallKernel.FunctionInvocationFilters.Add(_functionInvocationFilter);
-        var updateStateSettings = new OpenAIPromptExecutionSettings() { ReasoningEffort = "medium", ResponseFormat = typeof(UpdateAgentStateRequest), Temperature = 0.5};
+        var updateStateSettings = new OpenAIPromptExecutionSettings() { ReasoningEffort = "medium", ResponseFormat = typeof(UpdateAgentStateRequest), Temperature = 0.5, ChatSystemPrompt = "Follow the provided schema precisely when updating the agent's data"};
         var stateFunction = KernelFunctionFactory.CreateFromPrompt(updateDynamicStatePrompt, updateStateSettings, "UpdateAgentState");
-        var memorySettings = new OpenAIPromptExecutionSettings() { ReasoningEffort = "medium", ResponseFormat = typeof(UpdateAgentMemoryRequest), Temperature = 0.5};
+        var memorySettings = new OpenAIPromptExecutionSettings() { ReasoningEffort = "medium", ResponseFormat = typeof(UpdateAgentMemoryRequest), Temperature = 0.5, ChatSystemPrompt = "Follow the provided schema precisely when updating the agent's memory and relationships" };
         var memoryFunction =
             KernelFunctionFactory.CreateFromPrompt(updateMemoryPrompt, memorySettings, "UpdateAgentMemory");
         var updateArgs = new KernelArguments(updateStateSettings);
-        try
+        var updateStateAttempts = 0;
+        await GenerateUpdateState(updateArgs, stateFunction);
+
+        var memArgs = new KernelArguments(memorySettings);
+        var updateMemoryAttempts = 0;
+        await UpdateAgentMemoryAsync(memArgs, memoryFunction);
+        return;
+
+        async Task GenerateUpdateState(KernelArguments kernelArguments, KernelFunction kernelFunction)
         {
-            var agentStateUpdateResponse =
-                await smallKernel.InvokeAsync<string>(stateFunction, updateArgs, cancellationToken: ct);
+            try
+            {
+                var agentStateUpdateResponse =
+                    await smallKernel.InvokeAsync<string>(kernelFunction, kernelArguments, cancellationToken: ct);
                 //await smallKernel.InvokePromptAsync<string>(updateDynamicStatePrompt, updateArgs,
                 //    cancellationToken: ct);
-            var agentStateUpdate = JsonSerializer.Deserialize<UpdateAgentStateRequest>(agentStateUpdateResponse ?? "");
-            var updateLog = UpdateAgentState(agentStateUpdate.Description, agentStateUpdate.UpdatedDynamicState);
-            _logger.LogInformation("Agent State Update: {UpdateLog}", updateLog);
+                var agentStateUpdate =
+                    JsonSerializer.Deserialize<UpdateAgentStateRequest>(agentStateUpdateResponse ?? "");
+                var updateLog = UpdateAgentState(agentStateUpdate.Description, agentStateUpdate.UpdatedDynamicState);
+                _logger.LogInformation("Agent State Update: {UpdateLog}", updateLog);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating agent state");
+                if (updateStateAttempts < 3)
+                {
+                    updateStateAttempts++;
+                    await GenerateUpdateState(updateArgs, stateFunction);
+                }
+            }
         }
-        catch (Exception ex)
+
+        async Task UpdateAgentMemoryAsync(KernelArguments kernelArguments, KernelFunction kernelFunction)
         {
-            _logger.LogError(ex, "Error updating agent state");
+            try
+            {
+                var memoryUpdateResponse = await smallKernel.InvokeAsync<string>(kernelFunction, kernelArguments, cancellationToken: ct);
+                /*await smallKernel.InvokePromptAsync<string>(updateMemoryPrompt, memArgs, cancellationToken: ct)*/
+                ;
+                var agentMemoryUpdate = JsonSerializer.Deserialize<UpdateAgentMemoryRequest>(memoryUpdateResponse ?? "");
+                var memLog = UpdateAgentMemory(agentMemoryUpdate.Description, agentMemoryUpdate.UpdatedKnowledgeMemory);
+                _logger.LogInformation("Agent Memory Update: {MemLog}", memLog);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating agent memory");
+                if (updateMemoryAttempts < 3)
+                {
+                    updateMemoryAttempts++;
+                    await UpdateAgentMemoryAsync(memArgs, memoryFunction);
+                }
+            }
         }
-        
-        var memArgs = new KernelArguments(memorySettings);
-        try
-        {
-            var memoryUpdateResponse = await smallKernel.InvokeAsync<string>(memoryFunction, memArgs, cancellationToken: ct);
-            /*await smallKernel.InvokePromptAsync<string>(updateMemoryPrompt, memArgs, cancellationToken: ct)*/
-            ;
-            var agentMemoryUpdate = JsonSerializer.Deserialize<UpdateAgentMemoryRequest>(memoryUpdateResponse ?? "");
-            var memLog = UpdateAgentMemory(agentMemoryUpdate.Description, agentMemoryUpdate.UpdatedKnowledgeMemory);
-            _logger.LogInformation("Agent Memory Update: {MemLog}", memLog);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating agent memory");
-        }
-        
     }
 
     private string _previewStateDescription = "";
@@ -273,6 +400,8 @@ public class NarrativeOrchestration : INarrativeOrchestration
 
 	                                               Select the next participant name. If the information is not sufficient, select the name of any interesting participant from the list.
 	                                               """;
+
+    private const string AgentPersonalityPrompt = "Given what you know about yourself describe your personality in 500 words or less. Remember, you are answering as your character. Answer in that voice and do not break character.";
 
     private async Task<WorldAgent> SelectAgentAsync(List<WorldAgent> agents, ChatHistory history, CancellationToken cancellationToken = default)
     {

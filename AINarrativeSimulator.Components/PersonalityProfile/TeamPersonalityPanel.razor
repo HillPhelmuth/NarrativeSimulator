@@ -1,0 +1,31 @@
+<div class="panel">
+  <div class="left">
+    <ApexChart TItem="HeatCell" Title="Team Personality Heatmap" Height="420" Options="HeatOpts">
+        @foreach (var kv in Data.AgentPersonalities)
+        {
+                <ApexPointSeries TItem="HeatCell"
+                               Name="@kv.Key"
+                               Items="Row(kv.Key, kv.Value)"
+                               XValue="c => c.Trait"
+                               YValue="c => c.Percent" SeriesType="SeriesType.Heatmap" />
+        }
+    </ApexChart>
+  </div>
+
+  <div class="right">
+    <div class="insights">
+      <div class="card good">
+        <h4>Highlights</h4>
+        <ul>@foreach (var h in Highlights) { <li>@h</li> }</ul>
+      </div>
+      <div class="card warn">
+        <h4>Watch-outs</h4>
+        <ul>@foreach (var r in Risks) { <li>@r</li> }</ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+
+</style>

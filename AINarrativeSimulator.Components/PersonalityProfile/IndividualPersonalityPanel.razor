@@ -1,0 +1,53 @@
+@using ApexCharts
+@using Microsoft.AspNetCore.Components
+@using System.Collections.Generic
+@using NarrativeSimulator.Core.Services
+
+@* Shows: Radar chart (OCEAN) + narrative paragraphs for the selected agent *@
+
+<div class="panel">
+    <div class="left">
+        @if (_showChart)
+        {
+            <ApexChart @ref="_chart" TItem="BigFivePoint" Title="Big Five (Radar)" Height="320" Options="RadarOpts">
+                <ApexPointSeries TItem="BigFivePoint" Name="@AgentId" Items="@RadarPoints" SeriesType="SeriesType.Radar" XValue="p => p.Trait" YValue="p => (decimal)p.Percentile"/>
+            </ApexChart>
+        }
+    </div>
+
+  <div class="right">
+    @if (Writeup is null)
+    {
+        <div class="muted">No writeup available.</div>
+    }
+    else
+    {
+        <div class="traits">
+            <div class="row">
+                <div class="label">Openness <span class="badge @Writeup.Openness.Band.ToLower()">@Writeup.Openness.Band</span></div>
+                <div class="text">@Writeup.Paragraphs["Openness"]</div>
+            </div>
+            <div class="row">
+                <div class="label">Conscientiousness <span class="badge @Writeup.Conscientiousness.Band.ToLower()">@Writeup.Conscientiousness.Band</span></div>
+                <div class="text">@Writeup.Paragraphs["Conscientiousness"]</div>
+            </div>
+            <div class="row">
+                <div class="label">Extraversion <span class="badge @Writeup.Extraversion.Band.ToLower()">@Writeup.Extraversion.Band</span></div>
+                <div class="text">@Writeup.Paragraphs["Extraversion"]</div>
+            </div>
+            <div class="row">
+                <div class="label">Agreeableness <span class="badge @Writeup.Agreeableness.Band.ToLower()">@Writeup.Agreeableness.Band</span></div>
+                <div class="text">@Writeup.Paragraphs["Agreeableness"]</div>
+            </div>
+            <div class="row">
+                <div class="label">Neuroticism <span class="badge @Writeup.Neuroticism.Band.ToLower()">@Writeup.Neuroticism.Band</span></div>
+                <div class="text">@Writeup.Paragraphs["Neuroticism"]</div>
+            </div>
+        </div>
+    }
+  </div>
+</div>
+
+<style>
+
+</style>

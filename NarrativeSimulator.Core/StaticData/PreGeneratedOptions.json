@@ -1,0 +1,20 @@
+﻿[
+  {
+    "Name": "Project Nimbus - Cross-Functional Dev Team",
+    "Description": "A real-world software team racing to launch a payments subscription module under deadline, reliability, and cost constraints. Conflicts between speed, quality, and cost drive emergent negotiations, alliances, and incidents.",
+    "AgentCount": 6,
+    "Filename": "SoftwareTeamAgents.json"
+  },
+  {
+    "Name": "Riverbend Family Saga",
+    "Description": "A multi‑generational family lives on a modest farm in rural Mississippi, balancing tradition, economic strain, community ties, and the dreams of younger members.",
+    "AgentCount": 8,
+    "Filename": "FamilyAgents.json"
+  },
+  {
+    "Name": "Starlight Run: Smuggler's Covenant",
+    "Description": "In a distant future where faster‑than‑light travel is routine the Nebula Ghost is a battered but fast interstellar smuggling ship, crewed by a rag‑tag team that hauls contraband, rare artifacts, and anything the megacorporations deem too dangerous to sell openly. ",
+    "AgentCount": 7,
+    "Filename": "SmugglerAgents.json"
+  }
+]

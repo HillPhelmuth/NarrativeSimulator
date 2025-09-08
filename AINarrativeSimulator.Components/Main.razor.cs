@@ -30,39 +30,51 @@ public partial class Main
     private ResizableGridJsInterop ResizableGridInterop => new(JS);
     [Inject]
     private ILocalStorageService LocalStorage { get; set; } = default!;
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
 
-    private bool _showWorldController = true;
+    private bool _minCol1;
+    private bool _minCol2;
+    private bool _minCol3;
 
-    // Summary modal state
+    private string Col1Size => GetColSize(_minCol1, VisibleColumnsCount);
+    private string Col2Size => GetColSize(_minCol2, VisibleColumnsCount, 0.2);
+    private string Col3Size => GetColSize(_minCol3, VisibleColumnsCount, -0.2);
+    private int VisibleColumnsCount => 3 - new[] { _minCol1, _minCol2, _minCol3 }.Count(m => m);
+
+    private static string GetColSize(bool minimized, int visibleCount, double modifier = 0.0)
+    {
+        if (minimized) return "32px"; // just enough for the vertical label
+        var val = 1.0 + modifier;
+        return visibleCount switch
+        {
+            3 => $"{val}fr",
+            2 => $"{val}fr", // both remaining share
+            1 => $"{val}fr", // single expands
+            _ => $"{val}fr"
+        };
+    }
+
     private bool _showSummaryModal = false;
     private bool _isSummarizing = false;
     private string _summary = "";
 
     private bool _showComics;
-    // Throttling for local storage writes of agents
+    private bool _showPersonalityDash;
     private static readonly TimeSpan AgentsPersistInterval = TimeSpan.FromMinutes(15);
     private DateTime _lastAgentsPersistedUtc = DateTime.MinValue;
     private DateTime _lastWorldStatePersistedUtc = DateTime.MinValue;
     private int _seenHash;
+
     private async Task OpenSummaryModal()
     {
         _showSummaryModal = true;
         _isSummarizing = true;
         _summary = string.Empty;
         await InvokeAsync(StateHasChanged);
-        try
-        {
-            _summary = await NarrativeOrchestration.SummarizeCurrentWorldState();
-        }
-        catch (Exception ex)
-        {
-            _summary = $"Error generating summary: {ex.Message}";
-        }
-        finally
-        {
-            _isSummarizing = false;
-            await InvokeAsync(StateHasChanged);
-        }
+        try { _summary = await NarrativeOrchestration.SummarizeCurrentWorldState(); }
+        catch (Exception ex) { _summary = $"Error generating summary: {ex.Message}"; }
+        finally { _isSummarizing = false; await InvokeAsync(StateHasChanged); }
     }
 
     private Task CloseSummaryModal()
@@ -71,12 +83,20 @@ public partial class Main
         return InvokeAsync(StateHasChanged);
     }
 
-    private async Task ToggleWorldPanel()
+    private async Task ToggleCol(int col)
     {
-        _showWorldController = !_showWorldController;
+        switch (col)
+        {
+            case 1: _minCol1 = !_minCol1; break;
+            case 2: _minCol2 = !_minCol2; break;
+            case 3: _minCol3 = !_minCol3; break;
+        }
         await InvokeAsync(StateHasChanged);
         await Task.Delay(1);
-        await ResizableGridInterop.ReinitGrid(_grid, !_showWorldController);
+        if(!_minCol1 && !_minCol2 && !_minCol3)
+        {
+            await ResizableGridInterop.ReinitGrid(_grid, false);
+        }
     }
 
     private void HandleBeat(BeatSummary beat)
@@ -90,20 +110,17 @@ public partial class Main
         _isSummarizing = true;
         _summary = string.Empty;
         await InvokeAsync(StateHasChanged);
-        try
-        {
-            _summary = await NarrativeOrchestration.SummarizeCurrentWorldState();
-        }
-        catch (Exception ex)
-        {
-            _summary = $"Error generating summary: {ex.Message}";
-        }
-        finally
-        {
-            _isSummarizing = false;
-            await InvokeAsync(StateHasChanged);
-        }
+        try { _summary = await NarrativeOrchestration.SummarizeCurrentWorldState(); }
+        catch (Exception ex) { _summary = $"Error generating summary: {ex.Message}"; }
+        finally { _isSummarizing = false; await InvokeAsync(StateHasChanged); }
     }
+
+    protected override Task OnInitializedAsync()
+    {
+        if (WorldState.WorldAgents is null) Navigation.NavigateTo("/");
+        return base.OnInitializedAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -112,7 +129,6 @@ public partial class Main
             NarrativeOrchestration.WriteAgentChatMessage += HandleAgentChatMessageWritten;
             BeatEngine.OnBeat += HandleBeat;
             await BeatEngine.StartAsync();
-            //_module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/AINarrativeSimulator.Components/resizableGrid.js");
             await ResizableGridInterop.InitResizableGrid(_grid);
         }
     }
@@ -149,7 +165,6 @@ public partial class Main
                     await InvokeAsync(StateHasChanged);
                     break;
                 case nameof(WorldState.RecentActions):
-                    // Cheap change detector (hash of timestamps + counts)
                     var hash = Hash(WorldState.RecentActions);
                     if (hash == _seenHash) return;
                     _actions = WorldState.RecentActions;
@@ -158,7 +173,6 @@ public partial class Main
                     BeatEngine.Add(lastAction);
 
                     var nowUtc2 = DateTime.UtcNow;
-
                     if (nowUtc2 - _lastWorldStatePersistedUtc >= AgentsPersistInterval)
                     {
                         await LocalStorage.SetItemAsync($"worldstate-{DateTime.Now:hh:mm:ss}", WorldState);
@@ -177,6 +191,7 @@ public partial class Main
             Console.WriteLine($"Error handling WorldState property change: {ex.Message}");
         }
     }
+
     private static int Hash(IEnumerable<WorldAgentAction> actions)
     {
         unchecked
@@ -187,10 +202,10 @@ public partial class Main
                 h = h * 31 + a.Timestamp.GetHashCode();
                 h = h * 31 + (a.Details?.GetHashCode() ?? 0);
             }
-
             return h;
         }
     }
+
     private async Task HandleStart()
     {
         isRunning = true;
@@ -212,7 +227,6 @@ public partial class Main
         HandleStop();
         _actions.Clear();
         selectedAgentId = null;
-        // Keep agents/worldState as-is (host app could bind to these later)
         StateHasChanged();
     }
 
@@ -245,12 +259,13 @@ public partial class Main
         });
         StateHasChanged();
     }
+
     private static string MarkdownAsHtml(string markdownString)
     {
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        var result = Markdown.ToHtml(markdownString, pipeline);
-        return result;
+        return Markdown.ToHtml(markdownString, pipeline);
     }
+
     private Task OnSelectedAgentChanged(string id)
     {
         selectedAgentId = id;

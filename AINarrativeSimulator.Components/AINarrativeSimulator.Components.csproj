@@ -10,9 +10,13 @@
 
   <ItemGroup>
     <Compile Remove="ComicPanels\**" />
+    <Compile Remove="PersonalityProfile\Discarded\**" />
     <Content Remove="ComicPanels\**" />
+    <Content Remove="PersonalityProfile\Discarded\**" />
     <EmbeddedResource Remove="ComicPanels\**" />
+    <EmbeddedResource Remove="PersonalityProfile\Discarded\**" />
     <None Remove="ComicPanels\**" />
+    <None Remove="PersonalityProfile\Discarded\**" />
   </ItemGroup>
 
 
@@ -21,13 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor-ApexCharts" Version="6.0.2" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Markdig" Version="0.41.3" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\Images\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,77 @@
+.panel {
+    display: grid;
+    grid-template-columns: minmax(280px,1fr) minmax(260px,1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+@media(max-width:900px) {
+    .panel {
+        grid-template-columns: 1fr;
+    }
+}
+
+.left,
+.right {
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #111723;
+    padding: .5rem .75rem;
+    color: #e5e7eb;
+    
+}
+.left {
+    background-color: white;
+}
+.muted {
+    color: #9ca3af;
+}
+
+.traits {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.row .label {
+    font-weight: 600;
+    margin-bottom: .15rem;
+    color: #f1f5f9;
+}
+
+.row .text {
+    color: #cbd5e1;
+    font-size: .95rem;
+    line-height: 1.4;
+}
+
+.badge {
+    margin-left: .5rem;
+    padding: .15rem .5rem;
+    border-radius: .5rem;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    border: 1px solid #475569;
+    text-transform: uppercase;
+}
+
+/* Higher contrast badge variants */
+.badge.low {
+    background: #7f1d1d;
+    border-color: #dc2626;
+    color: #fecaca;
+}
+
+.badge.typical {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f1f5f9;
+}
+
+.badge.high {
+    background: #065f46;
+    border-color: #059669;
+    color: #d1fae5;
+}
+    

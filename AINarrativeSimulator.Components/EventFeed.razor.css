@@ -9,11 +9,12 @@
 .panel-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
+    justify-content: center;
+    gap:.5rem;
+    padding: 1.4rem 1rem .2rem;
     border-bottom: 1px solid #374151;
 }
-
+ 
 .panel-title {
     display: flex;
     align-items: center;
@@ -21,7 +22,11 @@
     color: #fff;
     font-weight: 600;
 }
-
+    .panel-title h3 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
     .panel-title .status-icon {
         width: 20px;
         height: 20px;

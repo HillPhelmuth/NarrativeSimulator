@@ -23,8 +23,10 @@ public class WorldAgents
     [JsonPropertyName("locations")]
     [Description("List of possible locations for agents")]
     public List<string> Locations { get; set; } = [];
-    public static WorldAgents DefaultFromJson()
+    public static WorldAgents? DefaultFromJson()
     {
+        // Temp for testing
+        return null;
         var defaultWorldAgents = FileHelper.ExtractFromAssembly<WorldAgents>("SoftwareTeamAgents.json");
         return defaultWorldAgents;
     }
@@ -105,6 +107,8 @@ public class WorldAgent
                 
                 * When responding, always begin your response with "From {AgentId}" as the first line.
                 
+                * Always stay in character. Closely consider your personality, profession, and core values when making decisions and taking actions.
+                
                 ## Your Current State
 
                 {DynamicState.ToMarkdown()}
@@ -116,13 +120,15 @@ public class WorldAgent
                 ## World State
                 
                 {worldStateDescription}
+                
+                **Reminder**: _Always take an action before responding. Your action should be directly relevant to the current world state and your character's goals and be closely aligned with your personality and core values._
                 """;
     }
 
     public string UpdateDynamicStatePrompt(string worldStateDescription, string actionDescription)
     {
         return 
-            $"""
+            $$$$"""
            
             
             ## Instructions
@@ -135,25 +141,27 @@ public class WorldAgent
             
             ## Your Current State
             
-            {JsonSerializer.Serialize(DynamicState)}
+            {{{{JsonSerializer.Serialize(DynamicState)}}}}
             
             ## Your Current Knowledge and Relationships
             
-            {JsonSerializer.Serialize(KnowledgeMemory)}
+            {{{{JsonSerializer.Serialize(KnowledgeMemory)}}}}
             
             ## World State
             
-            {worldStateDescription}
+            {{{{worldStateDescription}}}}
             
             ## Action Taken
             
-            {actionDescription}
+            {{{{actionDescription}}}}
+            
+           
             """;
     }
     public string UpdateKnowledgeMemoryPrompt(string worldStateDescription, string actionDescription)
     {
         return 
-            $"""
+            $$$$"""
             
             
             ## Instructions
@@ -164,19 +172,27 @@ public class WorldAgent
             
             ## Your Current State
             
-            {JsonSerializer.Serialize(DynamicState)}
+            {{{{JsonSerializer.Serialize(DynamicState)}}}}
             
             ## Your Current Knowledge and Relationships
             
-            {JsonSerializer.Serialize(KnowledgeMemory)}
+            {{{{JsonSerializer.Serialize(KnowledgeMemory)}}}}
             
             ## World State
             
-            {worldStateDescription}
+            {{{{worldStateDescription}}}}
             
             ## Action Taken
             
-            {actionDescription}
+            {{{{actionDescription}}}}
+            
+            ## Output Format
+            
+            follow this JSON schema exactly:
+            ```
+            {"type":"object","properties":{"Description":{"description":"Description of the update","type":"string"},"UpdatedKnowledgeMemory":{"description":"The updated agent knowledge memory and relationships","type":"object","properties":{"relationships":{"description":"People the character knows and how they feel about them.","type":"array","items":{"type":["object","null"],"properties":{"Name":{"description":"Name of the person this relationship is with.","type":"string"},"type":{"description":"Relationship type (e.g., friend, rival, colleague). This is absolutely required","type":"string"},"trust":{"description":"Trust level from 0 (none) to 100 (complete).","type":"integer"},"notes":{"description":"Short notes about history, context, or nuances of this relationship.","type":"string"}},"required":["Name","type","notes"]}},"recent_memories":{"description":"Key recent events the character remembers.","type":"array","items":{"type":["string","null"]}}},"required":["relationships","recent_memories"]}},"required":["Description","UpdatedKnowledgeMemory"]}
+            
+            ```
             """;
     }
 }

@@ -1,6 +1,4 @@
 
-
-
 <div class="panel agent-inspector @(Class)">
     <div class="panel-header">
         <div class="panel-title">
@@ -55,7 +53,7 @@
                 </div>
 
                 <div class="tabs">
-                    @foreach (var tab in new[] { "overview", "relationships", "memories", "goals" })
+                    @foreach (var tab in new[] { "overview", "memories", "goals", "personality" })
                     {
                         var isActive = _activeTab == tab;
                         <button class="tab @(isActive ? "active" : null)"
@@ -93,7 +91,7 @@
                     else if (_activeTab == "relationships")
                     {
                         <div class="section">
-                            @foreach (var rel in Current.KnowledgeMemory.Relationships)
+                            @foreach (var rel in Current.KnowledgeMemory?.Relationships ?? [])
                             {
                                 <div class="rel-card">
                                     <div class="rel-head">
@@ -112,7 +110,7 @@
                     else if (_activeTab == "memories")
                     {
                         <div class="section">
-                            @foreach (var m in Current.KnowledgeMemory.RecentMemories)
+                            @foreach (var m in Current.KnowledgeMemory?.RecentMemories ?? [])
                             {
                                 <div class="mem-card">
                                     <div class="mem-head">
@@ -158,6 +156,13 @@
                                     }
                                 </div>
                             </div>
+                        </div>
+                    }
+                    else if (_activeTab == "personality")
+                    {
+                        <div class="section">
+                            <h4>Detailed Personality</h4>
+                            <BigFiveVisual Agent="Current"></BigFiveVisual>
                         </div>
                     }
                 </div>

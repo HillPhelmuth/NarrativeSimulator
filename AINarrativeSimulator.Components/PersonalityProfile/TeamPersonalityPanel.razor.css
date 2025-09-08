@@ -1,0 +1,85 @@
+.panel {
+    display: grid;
+    grid-template-columns: minmax(380px,2fr) minmax(260px,1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+@media(max-width:1000px) {
+    .panel {
+        grid-template-columns: 1fr;
+    }
+}
+
+.left,
+.right {
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #111723; /* slightly darker, better base contrast */
+    padding: .5rem .75rem;
+    color: #e5e7eb;
+    
+}
+.left {
+    background-color: white;
+}
+/* Insights stack */
+.insights {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .75rem;
+}
+
+.card {
+    border: 1px solid #475569;
+    border-radius: 12px;
+    padding: .6rem .85rem;
+    background: #1a2330;
+    color: #e5e7eb;
+    line-height: 1.35;
+}
+
+/* Status variants with strong contrast */
+.card.good {
+    background: linear-gradient(135deg,#132e23 0%, #103726 100%);
+    border-color: #166534;
+}
+
+.card.warn {
+    background: linear-gradient(135deg,#3a1a1c 0%, #431e21 100%);
+    border-color: #b91c1c;
+}
+
+.card h4 {
+    margin: .15rem 0 .5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: .5px;
+}
+
+.card.good h4 {
+    color: #34d399; /* emerald-400 */
+}
+
+.card.warn h4 {
+    color: #f87171; /* red-400 */
+}
+
+.card ul {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.card ul li {
+    color: #cbd5e1;
+}
+
+.card.good ul li::marker { color:#34d399; }
+.card.warn ul li::marker { color:#f87171; }
+
+/* Optional focus style if cards become focusable later */
+.card:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+        
