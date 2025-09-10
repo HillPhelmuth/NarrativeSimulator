@@ -40,6 +40,7 @@
                                 }
                             </div>
                         </div>
+                        
                         <button class="btn btn-primary" @onclick="OpenSummaryModal">Generate World Summary</button>
                     </div>
                 </div>
@@ -57,12 +58,19 @@
                     <button class="mini-toggle" title="Minimize" @onclick="() => ToggleCol(1)">–</button>
                     <div class="view-toggle" title="Toggle between Beats and Events">
                         <label class="switch">
-                            <input type="checkbox" aria-label="Toggle view" @bind="_showComics" />
+                            <input type="checkbox" aria-label="Toggle view" @bind="ShowBeats" />
                             <span class="slider"></span>
                         </label>
-                        <span class="toggle-text">@(_showComics ? "Beats" : "Events")</span>
+                        <span class="toggle-text">@(ShowBeats ? "Beats" : "Events")</span>
                     </div>
-                    @if (_showComics)
+                    @if(!ShowBeats && _hasUnseenBeats)
+                    {
+                        <div class="beat-alert" title="New beats available - click to view" @onclick="(() => ShowBeats = true)">
+                            <span class="beat-alert-dot" aria-hidden="true"></span>
+                            <span>New Beats</span>
+                        </div>
+                    }
+                    @if (ShowBeats)
                     {
                         <BeatTicker Beats="WorldState.Beats"></BeatTicker>
                     }
@@ -84,13 +92,26 @@
                 @if (!_minCol2)
                 {
                     <button class="mini-toggle" title="Minimize" @onclick="() => ToggleCol(2)">–</button>
-                    <div class="view-toggle" style="z-index:100" title="Toggle between Details and Personality Dashboard">
-                        <label class="switch">
-                            <input type="checkbox" aria-label="Toggle view" @bind="_showPersonalityDash" />
-                            <span class="slider"></span>
-                        </label>
-                        <span class="toggle-text">@(_showPersonalityDash ? "Big-5" : "Details")</span>
-                    </div>
+                    
+                    @if (!_showPersonalityDash && WorldState.AgentPersonalityAssessment is null)
+                    {
+                        <button type="button" class="personality-nudge" @onclick="@(() => _showPersonalityDash = true)" title="View automatically generated Big Five personality insights for your agents">
+                            <span class="nudge-glow" aria-hidden="true"></span>
+                            <span class="nudge-icon" aria-hidden="true">★</span>
+                            <span class="nudge-text">Discover Personality Insights</span>
+                            <span class="nudge-arrow" aria-hidden="true">▶</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="view-toggle" style="z-index:100" title="Toggle between Details and Personality Dashboard">
+                            <label class="switch">
+                                <input type="checkbox" aria-label="Toggle view" @bind="_showPersonalityDash" />
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-text">@(_showPersonalityDash ? "Big-5" : "Details")</span>
+                        </div>
+                    }
                     @if (_showPersonalityDash)
                     {
                         <PersonalityDashboard />

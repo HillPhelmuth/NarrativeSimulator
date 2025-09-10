@@ -29,7 +29,7 @@ public partial class Intro
 
     // Snapshots
     private const string SnapshotStorageKey = "worldstate-snapshots";
-    private List<WorldStateSnapshot> _snapshots = new();
+    private List<WorldStateSnapshot> _snapshots = [];
     private bool _showSnapshots;
 
     protected override async Task OnInitializedAsync()

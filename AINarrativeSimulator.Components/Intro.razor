@@ -1,21 +1,25 @@
-@using NarrativeSimulator.Core
-@using NarrativeSimulator.Core.Models
-
 <div class="app-shell">
     <div class="intro-container @( _isGenerating ? "is-generating" : string.Empty)">
         <div class="intro-toolbar">
+            <div class="mode-toggle">
+                <label class="toggle-label">
+                    <input class="toggle-input" type="checkbox" @bind="_usePresetGroup" aria-label="Use a preset agent group" />
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    <span class="toggle-text">Use a preset agent group</span>
+                </label>
+            </div>
             <div class="load-snapshots">
                 <button class="btn-load" @onclick="ToggleSnapshots">Load Saved Snapshot (@_snapshots.Count)</button>
-                @if(_showSnapshots)
+                @if (_showSnapshots)
                 {
                     <div class="snapshot-menu intro">
-                        @if(_snapshots.Count == 0)
+                        @if (_snapshots.Count == 0)
                         {
                             <div class="snapshot-empty">No snapshots in storage</div>
                         }
                         else
                         {
-                            @foreach(var s in _snapshots.OrderByDescending(s=>s.CreatedUtc))
+                            @foreach (var s in _snapshots.OrderByDescending(s => s.CreatedUtc))
                             {
                                 <div class="snapshot-item">
                                     <div class="snap-meta" @onclick="(() => LoadSnapshot(s.Id))">
@@ -29,13 +33,7 @@
                 }
             </div>
         </div>
-        <div class="mode-toggle">
-            <label class="toggle-label">
-                <input class="toggle-input" type="checkbox" @bind="_usePresetGroup" aria-label="Use a preset agent group" />
-                <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                <span class="toggle-text">Use a preset agent group</span>
-            </label>
-        </div>
+        
         <div>
             @if (_usePresetGroup)
             {
@@ -57,7 +55,9 @@
             }
             else
             {
-                <CreateAgentsForm OnCreateAgents="CreateAgents" />
+                <div style="margin-top:-1rem">
+                    <CreateAgentsForm OnCreateAgents="CreateAgents"/>
+                </div>
             }
         </div>
         <div class="desc-panel">

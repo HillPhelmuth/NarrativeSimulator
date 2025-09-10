@@ -212,7 +212,7 @@
 }
 .preset-count { color: #94a3b8; font-weight: 400; }
 /* Snapshot load toolbar */
-.intro-toolbar { display:flex; justify-content:flex-end; padding-top:1rem; }
+.intro-toolbar { display:flex; justify-content:space-between;align-items:center; padding-top:1rem; }
 .load-snapshots { position:relative; }
 .btn-load { background:#1f2937; border:1px solid #374151; color:#e5e7eb; padding:.5rem .75rem; border-radius:.5rem; cursor:pointer; font-size:.8rem; }
 .btn-load:hover { background:#2563eb; border-color:#2563eb; }

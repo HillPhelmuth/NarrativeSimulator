@@ -141,7 +141,8 @@ public partial class Main
     private bool _isSummarizing = false;
     private string _summary = "";
 
-    private bool _showComics;
+    private bool _showBeats;
+    private bool _hasUnseenBeats; // indicator flag
     private bool _showPersonalityDash;
     private static readonly TimeSpan AgentsPersistInterval = TimeSpan.FromMinutes(15);
     private DateTime _lastAgentsPersistedUtc = DateTime.MinValue;
@@ -184,6 +185,10 @@ public partial class Main
     private void HandleBeat(BeatSummary beat)
     {
         WorldState.AddLastBeat(beat);
+        if(!_showBeats)
+        {
+            _hasUnseenBeats = true; // set indicator only when beats not visible
+        }
         InvokeAsync(StateHasChanged);
     }
 
@@ -227,7 +232,10 @@ public partial class Main
             });
             return;
         }
-        WorldState.AddRecentAction(new WorldAgentAction() { Type = ActionType.None, ActingAgent = agent, BriefDescription = $"{agent} Finished their action and has something to say!", Details = chatMessage, Timestamp = DateTime.Now });
+
+        var agentAction = new WorldAgentAction() { Type = ActionType.None, ActingAgent = agent, BriefDescription = $"{agent} Finished their action and has something to say!", Details = chatMessage, Timestamp = DateTime.Now };
+        WorldState.AddRecentAction(agentAction);
+        
     }
 
     private async void HandleWorldStatePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -355,5 +363,23 @@ public partial class Main
     {
         selectedAgentId = id;
         return Task.CompletedTask;
+    }
+
+    // helper partial method invoked by Blazor when binding changes could be used but we manually clear in a property wrapper.
+    private bool ShowBeats
+    {
+        get => _showBeats;
+        set
+        {
+            if(_showBeats != value)
+            {
+                _showBeats = value;
+                if(value)
+                {
+                    // user switched to beats view, clear unseen indicator
+                    _hasUnseenBeats = false;
+                }
+            }
+        }
     }
 }

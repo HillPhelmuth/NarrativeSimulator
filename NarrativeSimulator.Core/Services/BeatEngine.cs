@@ -22,7 +22,7 @@ public interface IBeatEngine
 public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEngine, IDisposable
 {
     private readonly TimeSpan _window = TimeSpan.FromSeconds(5); // tune: 3–8s works well
-    private int _minActions = 6;
+    private int _minActions = 4;
     private string _model = "openai/gpt-oss-20b";
     private readonly ConcurrentQueue<WorldAgentAction> _buffer = new();
     private Timer? _timer;
@@ -71,12 +71,12 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
       
         var count = _buffer.Count; // fine here; perf is OK for typical sizes
         var dueToIdle = false;
-
-        if (count < 6 && !dueToIdle)
+        Console.WriteLine($"Buffer Count {count}.");
+        if (count < 4 && !dueToIdle)
             return; // don't drain yet — keep accumulating
 
         // Build a batch to summarize.
-        var take = Math.Min(count, 6);
+        var take = Math.Min(count, 4);
         var batch = DequeueUpTo(take);
 
         if (batch.Length == 0) return;
