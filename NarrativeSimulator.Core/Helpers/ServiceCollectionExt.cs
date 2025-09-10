@@ -9,7 +9,7 @@ public static class ServiceCollectionExt
     public static IServiceCollection AddNarrativeServices(this IServiceCollection services)
     {
         // Register narrative-related services here
-        services.AddSingleton<WorldState>();
+        services.AddScoped<WorldState>();
         services.AddScoped<INarrativeOrchestration, NarrativeOrchestration>();
         services.AddScoped<IBeatEngine, BeatEngine>();
         return services;
