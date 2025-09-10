@@ -1,6 +1,7 @@
 ﻿using ApexCharts;
 using Microsoft.AspNetCore.Components;
 using NarrativeSimulator.Core;
+using NarrativeSimulator.Core.Models;
 using NarrativeSimulator.Core.Models.PsychProfile;
 
 namespace AINarrativeSimulator.Components.PersonalityProfile;
@@ -92,8 +93,9 @@ public partial class TeamPersonalityPanel
             Shared = false,
             Y = new TooltipY
             {
-                Formatter =
-                    "function(val, opts) { var d=opts.w.config.series[opts.seriesIndex].data[opts.dataPointIndex]; return d.Band + ' ('+Math.round(val)+'%)' + (d.ConfidenceText? ' — '+d.ConfidenceText : ''); }"
+                
+                //Formatter =
+                //    "function(val, opts) { var d=opts.w.config.series[opts.seriesIndex].data[opts.dataPointIndex]; return d.Band + ' ('+Math.round(val)+'%)' + (d.ConfidenceText? ' — '+d.ConfidenceText : ''); }"
             }
         }
     };

@@ -1,6 +1,7 @@
 ﻿using ApexCharts;
 using Microsoft.AspNetCore.Components;
 using NarrativeSimulator.Core;
+using NarrativeSimulator.Core.Models;
 using NarrativeSimulator.Core.Models.PsychProfile;
 using NarrativeSimulator.Core.Services;
 

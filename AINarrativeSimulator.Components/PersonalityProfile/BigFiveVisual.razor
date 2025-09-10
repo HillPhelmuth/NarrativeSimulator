@@ -1,7 +1,7 @@
 ﻿@if (_isReady)
 {
     <div style="width:100%;height:28rem">
-        <ApexChart TItem="TraitDatum" Title="Big Five Personality Scores" Options="_options">
+        <ApexChart TItem="TraitDatum" Height="300" Title="Big Five Personality Scores" Options="_options">
             <ApexPointSeries TItem="TraitDatum" Items="_traitData" XValue="@(d => d.Name)" YValue="@(d => (decimal)d.Quantile)" SeriesType="SeriesType.Bar" Name="Score"></ApexPointSeries>
             <ApexPointSeries TItem="TraitDatum" Items="_traitData" XValue="@(d => d.Name)" YValue="@(d => (decimal)d.Confidence.GetValueOrDefault())" SeriesType="SeriesType.Bar" Name="Confidence"></ApexPointSeries>
         </ApexChart>

@@ -72,7 +72,7 @@ internal class OpenRouterReasoningHandler(HttpMessageHandler innerHandler, ILogg
                     // Serialize the modified content back into the request
                     var modifiedContent = root.ToJsonString();
                     request.Content = new StringContent(modifiedContent, Encoding.UTF8, "application/json");
-                    //_output.LogInformation("=== REQUEST ===\n\n" + modifiedContent);
+                    _output.LogInformation("=== REQUEST ===\n\n" + modifiedContent);
                 }
             }
             catch (JsonException)

@@ -16,5 +16,17 @@
     "Description": "In a distant future where faster‑than‑light travel is routine the Nebula Ghost is a battered but fast interstellar smuggling ship, crewed by a rag‑tag team that hauls contraband, rare artifacts, and anything the megacorporations deem too dangerous to sell openly. ",
     "AgentCount": 7,
     "Filename": "SmugglerAgents.json"
+  },
+  {
+    "Name": "Chrono Heist Syndicate",
+    "Description": "In a future where time travel is commercialized, a rogue crew of thieves uses temporal jumps to rob high-value targets across eras while evading the Temporal Enforcement Agency and the paradox risks.",
+    "AgentCount": 6,
+    "Filename": "TimeTravelAgents.json"
+  },
+  {
+    "Name": "Suburban Babysitting Saga",
+    "Description": "A sardonic teenage babysitter is trapped in a house with five excessively spoiled, bratty children. The teen must navigate constant demands, tantrums, and endless requests while maintaining a sarcastic front, creating a volatile mix of humor and tension as each day feels like a battle of wills.",
+    "AgentCount": 6,
+    "Filename": "DamnKidsAgents.json"
   }
 ]

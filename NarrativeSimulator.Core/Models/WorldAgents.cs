@@ -23,6 +23,26 @@ public class WorldAgents
     [JsonPropertyName("locations")]
     [Description("List of possible locations for agents")]
     public List<string> Locations { get; set; } = [];
+
+    public string BriefHighlightsMarkdown()
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine($"# World: {Name}");
+        builder.AppendLine();
+        builder.AppendLine($"## Description");
+        builder.AppendLine(Description);
+        builder.AppendLine();
+        builder.AppendLine($"## Agents");
+        foreach (var agent in Agents)
+        {
+            builder.AppendLine($"### {agent.AgentId}");
+            builder.AppendLine($"- **Profession:** {agent.StaticTraits.Profession}");
+            builder.AppendLine($"- **Personality:** {agent.StaticTraits.PersonalityTraits}");
+            builder.AppendLine($"- **Core Values:** {agent.StaticTraits.CoreValues}");
+            builder.AppendLine();
+        }
+        return builder.ToString();
+    }
     public static WorldAgents? DefaultFromJson()
     {
         // Temp for testing

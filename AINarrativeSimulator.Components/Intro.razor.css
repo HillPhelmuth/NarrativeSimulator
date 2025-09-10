@@ -211,3 +211,16 @@
     color: #cbd5e1;
 }
 .preset-count { color: #94a3b8; font-weight: 400; }
+/* Snapshot load toolbar */
+.intro-toolbar { display:flex; justify-content:flex-end; padding-top:1rem; }
+.load-snapshots { position:relative; }
+.btn-load { background:#1f2937; border:1px solid #374151; color:#e5e7eb; padding:.5rem .75rem; border-radius:.5rem; cursor:pointer; font-size:.8rem; }
+.btn-load:hover { background:#2563eb; border-color:#2563eb; }
+.snapshot-menu.intro { position:absolute; top:110%; right:0; background:#0f172a; border:1px solid #1e293b; border-radius:.5rem; min-width:240px; max-height:260px; overflow:auto; padding:.35rem; z-index:50; box-shadow:0 6px 18px -4px rgba(0,0,0,.6); }
+.snapshot-empty { padding:.75rem; font-size:.75rem; color:#94a3b8; text-align:center; }
+.snapshot-item { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.4rem .5rem; border:1px solid #1e293b; border-radius:.4rem; cursor:pointer; background:#132033; }
+.snapshot-item + .snapshot-item { margin-top:.35rem; }
+.snapshot-item:hover { border-color:#2563eb; background:#1e3050; }
+.snap-meta { display:flex; flex-direction:column; font-size:.7rem; line-height:1.05rem; }
+.snap-name { font-weight:600; color:#e5e7eb; }
+.snap-time { color:#60a5fa; font-size:.65rem; letter-spacing:.5px; }

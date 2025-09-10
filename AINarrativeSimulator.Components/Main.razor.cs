@@ -6,6 +6,7 @@ using Microsoft.JSInterop;
 using NarrativeSimulator.Core;
 using NarrativeSimulator.Core.Models;
 using NarrativeSimulator.Core.Services;
+using System.Text.Json;
 
 namespace AINarrativeSimulator.Components;
 
@@ -33,26 +34,107 @@ public partial class Main
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
+    // Snapshot management
+    private const string SnapshotStorageKey = "worldstate-snapshots";
+    private List<WorldStateSnapshot> _snapshots = [];
+    private bool _showSnapshots;
+
+    private async Task LoadSnapshotsAsync()
+    {
+        try
+        {
+            var existing = await LocalStorage.GetItemAsync<List<WorldStateSnapshot>>(SnapshotStorageKey);
+            if (existing != null) _snapshots = existing;
+        }
+        catch { /* ignore */ }
+    }
+
+    private async Task PersistSnapshotsAsync()
+    {
+        try { await LocalStorage.SetItemAsync(SnapshotStorageKey, _snapshots); }
+        catch { /* ignore */ }
+    }
+
+    private async Task SaveSnapshot()
+    {
+        if (WorldState.WorldAgents == null) return;
+        var snap = new WorldStateSnapshot
+        {
+            Name = WorldState.Name ?? $"World {_snapshots.Count + 1}",
+            Description = WorldState.Description,
+            WorldAgents = WorldState.WorldAgents,
+            Rumors = WorldState.Rumors.ToList(),
+            GlobalEvents = WorldState.GlobalEvents.ToList(),
+            RecentActions = WorldState.RecentActions.ToList(),
+            Beats = WorldState.Beats.ToList()
+        };
+        _snapshots.Add(snap);
+        await PersistSnapshotsAsync();
+        _showSnapshots = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadSnapshot(Guid id)
+    {
+        var snap = _snapshots.FirstOrDefault(s => s.Id == id);
+        if (snap?.WorldAgents == null) return;
+        WorldState.WorldAgents = snap.WorldAgents;
+        WorldState.Rumors = snap.Rumors ?? [];
+        WorldState.GlobalEvents = snap.GlobalEvents ?? [];
+        WorldState.RecentActions = snap.RecentActions ?? [];
+        WorldState.Beats = snap.Beats ?? [];
+        _showSnapshots = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DeleteSnapshot(Guid id)
+    {
+        var idx = _snapshots.FindIndex(s => s.Id == id);
+        if (idx >= 0)
+        {
+            _snapshots.RemoveAt(idx);
+            await PersistSnapshotsAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void ToggleSnapshots() => _showSnapshots = !_showSnapshots;
+
     private bool _minCol1;
     private bool _minCol2;
     private bool _minCol3;
 
-    private string Col1Size => GetColSize(_minCol1, VisibleColumnsCount);
-    private string Col2Size => GetColSize(_minCol2, VisibleColumnsCount, 0.2);
-    private string Col3Size => GetColSize(_minCol3, VisibleColumnsCount, -0.2);
+    private string Col1Size => GetColSize(_minCol1, VisibleColumnsCount, ColumnRole.Left);
+    private string Col2Size => GetColSize(_minCol2, VisibleColumnsCount, ColumnRole.Middle);
+    private string Col3Size => GetColSize(_minCol3, VisibleColumnsCount, ColumnRole.Right);
     private int VisibleColumnsCount => 3 - new[] { _minCol1, _minCol2, _minCol3 }.Count(m => m);
 
-    private static string GetColSize(bool minimized, int visibleCount, double modifier = 0.0)
+    private enum ColumnRole { Left, Middle, Right }
+
+    private static string GetColSize(bool minimized, int visibleCount, ColumnRole role)
     {
         if (minimized) return "32px"; // just enough for the vertical label
-        var val = 1.0 + modifier;
-        return visibleCount switch
+
+        // When all three are visible enforce: middle is 20% wider than left (1.2 vs 1) and 33% wider than right (1.2 vs 0.9)
+        if (visibleCount == 3)
         {
-            3 => $"{val}fr",
-            2 => $"{val}fr", // both remaining share
-            1 => $"{val}fr", // single expands
-            _ => $"{val}fr"
-        };
+            return role switch
+            {
+                ColumnRole.Left => "1fr",
+                ColumnRole.Middle => "1.2fr",
+                ColumnRole.Right => "0.8fr",
+                _ => "1fr"
+            };
+        }
+
+        // When only two columns (any combination) keep them equal for simplicity
+        if (visibleCount == 2)
+        {
+            return "1fr";
+        }
+
+        // Single visible column takes full space
+        return "1fr";
     }
 
     private bool _showSummaryModal = false;
@@ -128,7 +210,7 @@ public partial class Main
             WorldState.PropertyChanged += HandleWorldStatePropertyChanged;
             NarrativeOrchestration.WriteAgentChatMessage += HandleAgentChatMessageWritten;
             BeatEngine.OnBeat += HandleBeat;
-            await BeatEngine.StartAsync();
+            await LoadSnapshotsAsync();
             await ResizableGridInterop.InitResizableGrid(_grid);
         }
     }
@@ -159,7 +241,7 @@ public partial class Main
                     var nowUtc = DateTime.UtcNow;
                     if (nowUtc - _lastAgentsPersistedUtc >= AgentsPersistInterval)
                     {
-                        await LocalStorage.SetItemAsync($"agents-{DateTime.Now:hh:mm:ss}", WorldState.WorldAgents);
+                        //await LocalStorage.SetItemAsync($"agents-{DateTime.Now:hh:mm:ss}", WorldState.WorldAgents);
                         _lastAgentsPersistedUtc = nowUtc;
                     }
                     await InvokeAsync(StateHasChanged);
@@ -175,7 +257,7 @@ public partial class Main
                     var nowUtc2 = DateTime.UtcNow;
                     if (nowUtc2 - _lastWorldStatePersistedUtc >= AgentsPersistInterval)
                     {
-                        await LocalStorage.SetItemAsync($"worldstate-{DateTime.Now:hh:mm:ss}", WorldState);
+                        //await LocalStorage.SetItemAsync($"worldstate-{DateTime.Now:hh:mm:ss}", WorldState);
                         _lastWorldStatePersistedUtc = nowUtc2;
                     }
                     await InvokeAsync(StateHasChanged);
@@ -208,6 +290,8 @@ public partial class Main
 
     private async Task HandleStart()
     {
+        await BeatEngine.StartAsync(WorldState.Name ?? "", WorldState.WorldAgents?.BriefHighlightsMarkdown()??"");
+        await ToggleCol(3);
         isRunning = true;
         var token = _cts.Token;
         await NarrativeOrchestration.RunNarrativeAsync(_rumor, token);
@@ -216,6 +300,7 @@ public partial class Main
 
     private void HandleStop()
     {
+        _ = BeatEngine.StopAsync();
         isRunning = false;
         _cts.Cancel();
         _cts = new CancellationTokenSource();

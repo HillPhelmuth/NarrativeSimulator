@@ -10,17 +10,13 @@ public partial class CreateAgentsForm
 
     private async Task SubmitAsync()
     {
-        if (OnCreateAgents.HasDelegate)
+        var copy = new CreateAgentWorldForm
         {
-            // Create a shallow copy to avoid mutation after submit
-            var copy = new CreateAgentWorldForm
-            {
-                Prompt = _form.Prompt,
-                WorldType = _form.WorldType,
-                FictionalWorldDescription = _form.FictionalWorldDescription,
-                NumberOfAgents = _form.NumberOfAgents
-            };
-            await OnCreateAgents.InvokeAsync(copy);
-        }
+            Prompt = _form.Prompt,
+            WorldType = _form.WorldType,
+            FictionalWorldDescription = _form.FictionalWorldDescription,
+            NumberOfAgents = _form.NumberOfAgents
+        };
+        await OnCreateAgents.InvokeAsync(copy);
     }
 }

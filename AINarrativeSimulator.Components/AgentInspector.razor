@@ -1,4 +1,3 @@
-
 <div class="panel agent-inspector @(Class)">
     <div class="panel-header">
         <div class="panel-title">
@@ -9,9 +8,9 @@
 
     <div class="inspector">
         <div class="agent-list">
-            <div class="agent-list-head">
+            @* <div class="agent-list-head">
                 <h4>Agents (@Agents.Count())</h4>
-            </div>
+            </div> *@
             <div class="agent-list-scroll">
                 @foreach (var agent in Agents)
                 {
@@ -52,15 +51,17 @@
                     <div class="mood-badge @GetMoodBadge(Current.DynamicState.CurrentMood)">@Current.DynamicState.CurrentMood</div>
                 </div>
 
-                <div class="tabs">
-                    @foreach (var tab in new[] { "overview", "memories", "goals", "personality" })
-                    {
-                        var isActive = _activeTab == tab;
-                        <button class="tab @(isActive ? "active" : null)"
-                                @onclick="(() => _activeTab = tab)">
-                            <span>@tab</span>
-                        </button>
-                    }
+                <!-- Replaced tabs with dropdown selector -->
+                <div class="section-selector">
+                    <label class="selector-label" for="agent-section">Section</label>
+                    <div class="section-select-wrapper">
+                        <select id="agent-section" class="section-select" @bind="_activeTab">
+                            @foreach (var sec in Sections)
+                            {
+                                <option value="@sec">@SectionLabel(sec)</option>
+                            }
+                        </select>
+                    </div>
                 </div>
 
                 <div class="tab-content">
@@ -170,3 +171,9 @@
         </div>
     </div>
 </div>
+
+@code {
+    // Sections moved here to include relationships which was previously unreachable
+    private static readonly string[] Sections = new[] { "overview", "relationships", "memories", "goals", "personality" };    
+    private static string SectionLabel(string key) => string.IsNullOrEmpty(key) ? key : char.ToUpperInvariant(key[0]) + key[1..];
+}

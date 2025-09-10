@@ -1,6 +1,7 @@
 using Markdig;
 using Microsoft.AspNetCore.Components;
 using NarrativeSimulator.Core;
+using NarrativeSimulator.Core.Models;
 
 namespace AINarrativeSimulator.Components;
 public partial class PersonalityDashboard

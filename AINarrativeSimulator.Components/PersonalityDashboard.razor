@@ -31,7 +31,8 @@
                 <TeamPersonalityPanel Data="WorldState.AgentPersonalityAssessment"></TeamPersonalityPanel>
             </div>
             <div class="card">
-                @((MarkupString)MarkdownAsHtml(WorldState.AgentPersonalityAssessment.LlmGroupWriteUp!))
+                <h3 class="text-center">gpt-oss-120b Group Dynamics Analysis</h3>
+                @((MarkupString)MarkdownAsHtml(WorldState.AgentPersonalityAssessment.LlmGroupWriteUp!)!)
             </div>
         </div>
     }

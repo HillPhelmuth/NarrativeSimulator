@@ -31,8 +31,8 @@
                 </div>
                 <div class="field" style="width:50%">
                     <label for="numAgents">Number of Agents</label>
-                    <InputNumber id="numAgents" @bind-Value="_form.NumberOfAgents" class="number-input" min="1" max="12" />
-                    <small class="hint">1 - 12</small>
+                    <InputNumber id="numAgents" @bind-Value="_form.NumberOfAgents" class="number-input" min="3" max="12" />
+                    <small class="hint">3 - 12</small>
                     <ValidationMessage For="() => _form.NumberOfAgents" />
                 </div>
             </div>

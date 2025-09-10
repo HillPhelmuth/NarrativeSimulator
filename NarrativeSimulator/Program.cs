@@ -19,7 +19,10 @@ builder.Services.AddSymantoClient(opts =>
     opts.ApiKey = builder.Configuration["Sentino:ApiKey"] ?? string.Empty;
 });
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddApexCharts();
+builder.Services.AddApexCharts(o =>
+{
+    o.GlobalOptions = new ApexChartBaseOptions() { Tooltip = new Tooltip() { CssClass = "apex-tooltip" } };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

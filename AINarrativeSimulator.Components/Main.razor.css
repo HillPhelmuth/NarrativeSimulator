@@ -33,6 +33,8 @@
     display: flex;
     align-items: center;
     gap: .75rem;
+    max-width:60vw;
+    overflow:hidden;
 }
 
 .brand-icon {
@@ -103,8 +105,13 @@
     font-weight: 500;
 }
 
-.btn-primary { background: #2563eb; color: #fff; font-size:90%;padding:2px }
-.btn-secondary { background: #4b5563; color: #fff; }
+.btn-primary { background: #2563eb; color: #fff; font-size:90%;padding:4px; }
+.btn-secondary {
+    background: #4b5563;
+    color: #fff;
+    font-size: 90%;
+    padding: 4px;
+}
 
 .view-toggle {
     display: inline-flex;
@@ -125,9 +132,9 @@
 .toggle-text { color: #9ca3af; font-size: .875rem; }
 
 .main-grid {
-    --col1: 1fr;
-    --col2: 1.2fr;
-    --col3: 0.8fr;
+    --col1: 1fr;      /* Events / Beats */
+    --col2: 1.2fr;    /* Agent Inspector (20% wider than col1) */
+    --col3: 0.8fr;    /* World Controller so that col2 is ~50% wider (1.2 / 0.8 = 1.5) */
     --gutter: 6px;
     display: grid;
     grid-template-columns: var(--col1) var(--gutter) var(--col2) var(--gutter) var(--col3);
@@ -347,3 +354,16 @@
 }
 
 .loading { display:flex; align-items:center; gap:.5rem; color:#9ca3af; }
+/* Snapshot dropdown */
+.snapshot-group { position:relative; display:flex; gap:.4rem; }
+.snapshot-dropdown { position:relative; }
+.snapshot-menu { position:absolute; top:110%; right:0; background:#0f172a; border:1px solid #1e293b; border-radius:.5rem; min-width:260px; max-height:300px; overflow:auto; padding:.4rem; z-index:200; box-shadow:0 8px 24px -6px rgba(0,0,0,.7); }
+.snapshot-empty { padding:.75rem; font-size:.75rem; color:#94a3b8; text-align:center; }
+.snapshot-item { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.45rem .55rem; border:1px solid #1e293b; border-radius:.45rem; background:#132033; }
+.snapshot-item + .snapshot-item { margin-top:.4rem; }
+.snapshot-item:hover { border-color:#2563eb; background:#1e3050; }
+.snap-meta { display:flex; flex-direction:column; font-size:.7rem; line-height:1.05rem; cursor:pointer; }
+.snap-name { font-weight:600; color:#e5e7eb; }
+.snap-time { color:#60a5fa; font-size:.6rem; letter-spacing:.5px; }
+.snap-delete { background:#1f2937; border:1px solid #374151; color:#9ca3af; width:22px; height:22px; border-radius:6px; cursor:pointer; font-size:.8rem; display:flex; align-items:center; justify-content:center; }
+.snap-delete:hover { background:#dc2626; border-color:#dc2626; color:#fff; }

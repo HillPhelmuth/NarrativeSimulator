@@ -3,7 +3,7 @@
     background: #111827;
     border: 1px solid #374151;
     border-radius: 0.5rem;
-    height:80vh;
+    height: 83vh;
 }
 
 .panel-header {
@@ -56,7 +56,7 @@
 
 /* Feed list */
 .feed-scroll {
-    height: 80vh;
+    height: 83vh;
     overflow-y: auto;
     padding: 1rem;
     display: flex;

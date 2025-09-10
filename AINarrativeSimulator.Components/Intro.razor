@@ -1,8 +1,34 @@
 @using NarrativeSimulator.Core
-
+@using NarrativeSimulator.Core.Models
 
 <div class="app-shell">
     <div class="intro-container @( _isGenerating ? "is-generating" : string.Empty)">
+        <div class="intro-toolbar">
+            <div class="load-snapshots">
+                <button class="btn-load" @onclick="ToggleSnapshots">Load Saved Snapshot (@_snapshots.Count)</button>
+                @if(_showSnapshots)
+                {
+                    <div class="snapshot-menu intro">
+                        @if(_snapshots.Count == 0)
+                        {
+                            <div class="snapshot-empty">No snapshots in storage</div>
+                        }
+                        else
+                        {
+                            @foreach(var s in _snapshots.OrderByDescending(s=>s.CreatedUtc))
+                            {
+                                <div class="snapshot-item">
+                                    <div class="snap-meta" @onclick="(() => LoadSnapshot(s.Id))">
+                                        <div class="snap-name">@s.Name</div>
+                                        <div class="snap-time">@s.CreatedUtc.ToLocalTime().ToString("HH:mm:ss")</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
         <div class="mode-toggle">
             <label class="toggle-label">
                 <input class="toggle-input" type="checkbox" @bind="_usePresetGroup" aria-label="Use a preset agent group" />
@@ -49,33 +75,22 @@
                     <p>Start instantly with curated scenario casts (family, software team, infiltration, etc.) or generate a fresh world with a custom prompt & real vs fictional context settings.</p>
                 </div>
                 <div>
+                    <h3 class="desc-h3">Personality Profiling</h3>
+                    <p>Agents receive Big Five personality scores (Sentino API) on first inspection. Comparative visualization and LLM Personality and Group Dynamics analysis helps interpret group dynamics and potential tensions.</p>
+                </div>
+                <div>
                     <h3 class="desc-h3">Beats & Higher-Level Summaries</h3>
                     <p>Recent atomic actions are periodically distilled into dramatic beats giving you a higher-level pulse of the unfolding story. Generate an on-demand world summary at any time.</p>
                 </div>
-                <div>
-                    <h3 class="desc-h3">Personality Profiling</h3>
-                    <p>Agents receive Big Five personality scores (Sentino API) on first inspection. Comparative visualization helps interpret group dynamics and potential tensions.</p>
-                </div>
+               
                 <div>
                     <h3 class="desc-h3">Rumors & World Events</h3>
                     <p>Inject narrative catalysts. Added rumors and global events are fed back into future reasoning cycles, nudging direction without direct agent control.</p>
                 </div>
-                @* <div>
-                    <h3 class="desc-h3">Resizable Insight Dashboard</h3>
-                    <p>Three-column layout (Events / Agents / World) can be resized & minimized. Toggle between raw events and beats, or between agent details and personality dashboard views.</p>
-                </div> *@
                 <div>
                     <h3 class="desc-h3">Fast as Hell LLM Orchestration</h3>
-                    <p>OpenRouter calls include provider targeting Cerebras and Grok.</p>
+                    <p>OpenRouter calls include provider targeting for Cerebras and Grok to maximize throughput.</p>
                 </div>
-                @* <div>
-                    <h3 class="desc-h3">Local Session Persistence</h3>
-                    <p>Light snapshots of agents & world state are periodically cached to your browser storage to aid restart / inspection during experimentation.</p>
-                </div> *@
-                @* <div>
-                    <h3 class="desc-h3">Extensible Tooling</h3>
-                    <p>World mutations use Semantic Kernel plugin functions. Add new actions or scoring services and surface them through the same orchestration path.</p>
-                </div> *@
             </div>
             <div class="desc-highlight" role="note">
                 <strong>Tip:</strong> Generate or load agents, then open the World Controller and press <em>Start</em> to let the story begin. Inject a rumor if the loop feels quiet to provoke new dynamics.

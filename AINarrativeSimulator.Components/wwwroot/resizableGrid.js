@@ -6,14 +6,18 @@ export function initResizableGrid(gridEl) {
 
 export function reinitGrid(gridEl, isTwoColumn) {
     if (!gridEl) return;
-    // Normalize widths so remaining columns share space equally
+    // When reinitializing, restore desired default ratios instead of flattening to 1fr each.
     if (isTwoColumn) {
+        // Keep two visible columns equal for now
         setVar(gridEl, '--col1', '1fr');
         setVar(gridEl, '--col2', '1fr');
+        // Clear any third column size just in case
+        setVar(gridEl, '--col3', '0px');
     } else {
+        // Three-column default: middle 20% wider than left and ~33% wider than right
         setVar(gridEl, '--col1', '1fr');
-        setVar(gridEl, '--col2', '1fr');
-        setVar(gridEl, '--col3', '1fr');
+        setVar(gridEl, '--col2', '1.2fr');
+        setVar(gridEl, '--col3', '0.8fr');
     }
     attachHandlers(gridEl);
 }
@@ -26,8 +30,8 @@ function setupLayoutReset(gridEl) {
     const mq = window.matchMedia('(max-width: 1023.98px)');
     mq.addEventListener('change', () => {
         setVar(gridEl, '--col1', '1fr');
-        setVar(gridEl, '--col2', '1fr');
-        setVar(gridEl, '--col3', '1fr');
+        setVar(gridEl, '--col2', '1.2fr');
+        setVar(gridEl, '--col3', '0.8fr');
     });
 }
 

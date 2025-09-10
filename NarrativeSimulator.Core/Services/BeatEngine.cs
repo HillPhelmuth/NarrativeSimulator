@@ -12,7 +12,7 @@ public interface IBeatEngine
     void Add(WorldAgentAction action);
 
     // Start/stop the windowing loop
-    Task StartAsync(CancellationToken ct = default);
+    Task StartAsync(string name, string description, CancellationToken ct = default);
     Task StopAsync();
 
     // Fired whenever a beat is produced
@@ -30,7 +30,9 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
     private readonly TimeSpan _idleFlush = TimeSpan.FromMinutes(2);
     public event Action<BeatSummary>? OnBeat;
     private DateTime _lastBeatUtc = DateTime.MinValue;
-
+    private List<BeatSummary> _beatHistory = [];
+    private string? _worldName;
+    private string? _worldDescription;
     public void Add(WorldAgentAction action)
     {
         if (action.Type is ActionType.None or ActionType.Error) return;
@@ -38,8 +40,10 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
         _buffer.Enqueue(action);
     }
 
-    public Task StartAsync(CancellationToken ct = default)
+    public Task StartAsync(string name, string description, CancellationToken ct = default)
     {
+        _worldName = name;
+        _worldDescription = description;
         if (_running) return Task.CompletedTask;
         _running = true;
         _timer = new Timer(async _ => await TryMakeBeatAsync(ct), null,
@@ -64,13 +68,11 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
         // Fast path: nothing to do
         if (_buffer.IsEmpty) return;
 
-        // Decide if we should flush:
-        // 1) enough actions accumulated, OR
-        // 2) it's been a while since last beat -> idle flush of whatever we have.
+      
         var count = _buffer.Count; // fine here; perf is OK for typical sizes
-        var dueToIdle = (now - _lastBeatUtc) >= _idleFlush;
+        var dueToIdle = false;
 
-        if (count < _minActions && !dueToIdle)
+        if (count < 6 && !dueToIdle)
             return; // don't drain yet — keep accumulating
 
         // Build a batch to summarize.
@@ -84,12 +86,12 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
 
         var payload = string.Join("\n\n", batch.Select(a => a.ToTypeMarkdown()).Select(x => $"{x.Item1} -> {x.Item2}"));
 
-        var prompt = BuildBeatPrompt(payload, start, end);
+        var prompt = BuildBeatPrompt(_worldName, _worldDescription, payload, start, end, _beatHistory);
         var beatResponseJson = "";
         try
         {
             var settings = new OpenAIPromptExecutionSettings()
-                { ResponseFormat = typeof(BeatSummary), ReasoningEffort = "high" };
+            { ResponseFormat = typeof(BeatSummary), ReasoningEffort = "high" };
             beatResponseJson = await orchestration.ExecuteLlmPrompt(prompt, _model, settings, ct);
             var beat = JsonSerializer.Deserialize<BeatSummary>(beatResponseJson);
             if (beat is null) return;
@@ -101,6 +103,7 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
 
             OnBeat?.Invoke(beat);
             _lastBeatUtc = now;
+            _beatHistory.Add(beat); // store full beat for history context
         }
         catch (Exception ex)
         {
@@ -118,30 +121,35 @@ public sealed class BeatEngine(INarrativeOrchestration orchestration) : IBeatEng
         }
         return list.ToArray();
     }
-    
-    private static string BuildBeatPrompt(string actionsJson, DateTime startUtc, DateTime endUtc)
+
+    private static string BuildBeatPrompt(string worldName, string description, string actionsJson, DateTime startUtc,
+        DateTime endUtc,
+        List<BeatSummary>? beatHistory = null)
     {
         var sb = new StringBuilder();
         sb.AppendLine("System: You are the Narrative Beat Dramatizer for a fast-ticking narrative.");
+        sb.AppendLine($"The narrative name is '{worldName}', and has the following details:");
+        sb.AppendLine(description);
         sb.AppendLine("Rules:");
         sb.AppendLine("- Dramatize ONLY the events you are given. Do not invent new events.");
-        sb.AppendLine("- Keep 'Title' ≤ 8 words. 'Dramatization' should be interesting and story-worthy 1-3 paragraphs.");
+        sb.AppendLine("- Keep 'Title' ≤ 8 words. 'Dramatization' should be interesting and story-worthy 1-3 paragraphs that is consistent with previous narrative beats.");
         sb.AppendLine($"- 'Mood' ∈ {string.Join(", ", Enum.GetNames<Mood>())}.");
         sb.AppendLine("- 'Tension' is 0–100 (0=calm, 100=crisis).");
         sb.AppendLine();
         sb.AppendLine("Actions:");
         sb.AppendLine(actionsJson);
         sb.AppendLine();
-        
+        sb.AppendLine($"Time window: {startUtc:O} to {endUtc:O} (UTC)");
+        sb.AppendLine();
+        if (beatHistory is { Count: > 0 })
+        {
+            sb.AppendLine("**Preview beat dramatizations**");
+            foreach (var d in beatHistory.TakeLast(10))
+            {
+                sb.AppendLine($"- {d.WindowEndUtc}: {d.Dramatization}");
+            }
+        }
         return sb.ToString();
-    }
-
-    private WorldAgentAction[] DequeueAll()
-    {
-        Console.WriteLine("DequeueAll");
-        var list = new List<WorldAgentAction>(64);
-        while (_buffer.TryDequeue(out var a)) list.Add(a);
-        return list.ToArray();
     }
 
     private static string Hash(string s)
