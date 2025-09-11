@@ -12,7 +12,7 @@ public class WorldAgentAction
 {
     [JsonIgnore]
     public string? ActingAgent { get; set; }
-    [JsonIgnore]
+    [Description("Optional brief description of action")]
     public string? BriefDescription { get; set; }
     [JsonIgnore]
     public string? AgentImagePath { get; set; }

@@ -488,6 +488,7 @@ public class NarrativeOrchestration : INarrativeOrchestration
             agent.KnowledgeMemory = updatedKnowledgeMemory;
 
             agent.AddNotes(description);
+            agent.LastUpdate = DateTime.UtcNow;
             _worldState.UpdateAgent(agent);
             return $"Agent '{agentId}' knowledge memory and relationships updated successfully.";
         }
@@ -513,6 +514,7 @@ public class NarrativeOrchestration : INarrativeOrchestration
             agent.DynamicState = updatedDynamicState;
 
             agent.AddNotes(description);
+            agent.LastUpdate = DateTime.UtcNow;
             _worldState.UpdateAgent(agent);
             return $"Agent '{agentId}' state updated successfully.";
         }

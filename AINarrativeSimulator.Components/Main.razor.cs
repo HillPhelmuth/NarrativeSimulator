@@ -270,7 +270,7 @@ public partial class Main
             Details = rumor,
             Timestamp = DateTime.Now
         };
-        _actions.Add(worldAgentAction);
+        WorldState.AddRecentAction(worldAgentAction);
         StateHasChanged();
     }
 
@@ -286,7 +286,7 @@ public partial class Main
             Details = evt,
             Timestamp = DateTime.Now
         };
-        _actions.Add(worldAgentAction);
+        //_actions.Add(worldAgentAction);
         WorldState.AddRecentAction(worldAgentAction);
         StateHasChanged();
     }
