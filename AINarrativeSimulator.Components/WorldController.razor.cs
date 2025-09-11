@@ -16,7 +16,7 @@ public partial class WorldController
     private string rumorText = string.Empty;
     private string eventText = string.Empty;
     private string activeTab = "inject"; // inject | world
-
+    private SaveLoad _saveLoad;
     private readonly string[] presetRumors =
     [
         "Dock crews whisper the Overseer AI throttled power to favor Asterion bays",

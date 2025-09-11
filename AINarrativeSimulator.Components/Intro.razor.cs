@@ -71,8 +71,8 @@ public partial class Intro
         {
             var worldDescription = createAgentForm.WorldType == WorldType.RealWorld ? "in the real world"
                 : $"in a fictional world described as: {createAgentForm.FictionalWorldDescription}";
-            var prompt = $$"""
-                          Create agents {worldDescription} that are conform to the user instructions:
+            var prompt = $"""
+                          Create agents {worldDescription} that conform to the user instructions:
 
                           **User Instructions**
 

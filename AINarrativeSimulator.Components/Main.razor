@@ -32,8 +32,8 @@
                         <label class="switch">
                             <input type="checkbox" aria-label="Toggle view" @bind="ShowBeats" />
                             <span class="slider"></span>
-                        </label>
-                        <span class="toggle-text">@(ShowBeats ? "Beats" : "Events")</span>
+                           </label>
+                           <span @onclick="@(() => ShowBeats = !ShowBeats)" class="toggle-text">@(ShowBeats ? "Beats" : "Events")</span>
                     </div>
                     @if(!ShowBeats && _hasUnseenBeats)
                     {

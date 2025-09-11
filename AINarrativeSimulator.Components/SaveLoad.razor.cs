@@ -88,4 +88,9 @@ public partial class SaveLoad
     }
 
     private void ToggleSnapshots() => _showSnapshots = !_showSnapshots;
+    public void CloseSnapshots()
+    {
+        _showSnapshots = false;
+        StateHasChanged();
+    }
 }

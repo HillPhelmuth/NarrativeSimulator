@@ -262,14 +262,15 @@ public partial class Main
     {
         _rumor += "\nRumor: " + rumor;
         WorldState.Rumors.Add(rumor);
-        _actions.Add(new WorldAgentAction()
+        var worldAgentAction = new WorldAgentAction()
         {
             BriefDescription = "A rumor has been injected into the world",
-            Type = ActionType.None,
+            Type = ActionType.Undermine,
             Target = "public",
             Details = rumor,
             Timestamp = DateTime.Now
-        });
+        };
+        _actions.Add(worldAgentAction);
         StateHasChanged();
     }
 
@@ -277,14 +278,16 @@ public partial class Main
     {
         _rumor += "\nEvent: " + evt;
         WorldState.GlobalEvents.Add(evt);
-        _actions.Add(new WorldAgentAction
+        var worldAgentAction = new WorldAgentAction
         {
             BriefDescription = "A world event has been injected into the world",
             Type = ActionType.Discover,
             Target = "public",
             Details = evt,
             Timestamp = DateTime.Now
-        });
+        };
+        _actions.Add(worldAgentAction);
+        WorldState.AddRecentAction(worldAgentAction);
         StateHasChanged();
     }
 

@@ -1,20 +1,20 @@
 
 
 
-<div class="panel world-controller">
+<div class="panel world-controller" @onclick="@(() => _saveLoad.CloseSnapshots())">
     <div class="panel-header">
         <div class="panel-title">
             <div class="title-icon"></div>
             <h3>World Controller</h3>
         </div>
-        <div class="controls">
+        <div class="controls" @onclick:stopPropagation>
             <button class="btn @(IsRunning ? "btn-danger" : "btn-success")" @onclick="ToggleRunAsync">
                 <span>@(IsRunning ? "Pause" : "Start")</span>
             </button>
             <button class="btn btn-secondary" @onclick="ResetAsync">
                 <span>Reset</span>
             </button>
-            <SaveLoad />
+            <SaveLoad @ref="_saveLoad" />
         </div>
         <div class="state-bar">
             <div class="state">
