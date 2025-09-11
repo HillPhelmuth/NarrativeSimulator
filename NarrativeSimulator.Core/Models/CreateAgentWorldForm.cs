@@ -14,7 +14,7 @@ public class CreateAgentWorldForm
     public WorldType WorldType { get; set; } = WorldType.RealWorld;
     public string? FictionalWorldDescription { get; set; } // only displayed if WorldType is Fictional
     [Range(1, 12)]
-    public int NumberOfAgents { get; set; } = 3;
+    public int NumberOfAgents { get; set; } = 5;
 }
 
 public enum WorldType
