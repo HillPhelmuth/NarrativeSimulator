@@ -56,7 +56,7 @@
 .panel.agent-inspector .agent-list-scroll {
     overflow-y: auto;
     height: 100%;
-    max-height: 35rem;
+    max-height: 30rem;
     scrollbar-width:thin;
 }
 
@@ -264,6 +264,7 @@
     padding: 1rem;
     overflow: auto;
     scrollbar-width: thin;
+    max-height:23rem;
 }
 
 .panel.agent-inspector .section { display: flex; flex-direction: column; gap: 1rem; }

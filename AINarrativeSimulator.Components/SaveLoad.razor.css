@@ -1,0 +1,90 @@
+.snapshot-group {
+    position: relative;
+    display: flex;
+    gap: .4rem;
+}
+
+.snapshot-dropdown {
+    position: relative;
+}
+
+.snapshot-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: .5rem;
+    min-width: 260px;
+    max-height: 300px;
+    overflow: auto;
+    padding: .4rem;
+    z-index: 200;
+    box-shadow: 0 8px 24px -6px rgba(0,0,0,.7);
+}
+
+.snapshot-empty {
+    padding: .75rem;
+    font-size: .75rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.snapshot-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .45rem .55rem;
+    border: 1px solid #1e293b;
+    border-radius: .45rem;
+    background: #132033;
+}
+
+    .snapshot-item + .snapshot-item {
+        margin-top: .4rem;
+    }
+
+    .snapshot-item:hover {
+        border-color: #2563eb;
+        background: #1e3050;
+    }
+
+.snap-meta {
+    display: flex;
+    flex-direction: column;
+    font-size: .7rem;
+    line-height: 1.05rem;
+    cursor: pointer;
+}
+
+.snap-name {
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.snap-time {
+    color: #60a5fa;
+    font-size: .6rem;
+    letter-spacing: .5px;
+}
+
+.snap-delete {
+    background: #1f2937;
+    border: 1px solid #374151;
+    color: #9ca3af;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: .8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .snap-delete:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+        color: #fff;
+    }

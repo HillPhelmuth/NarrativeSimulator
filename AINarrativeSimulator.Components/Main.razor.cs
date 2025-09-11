@@ -34,71 +34,7 @@ public partial class Main
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
-    // Snapshot management
-    private const string SnapshotStorageKey = "worldstate-snapshots";
-    private List<WorldStateSnapshot> _snapshots = [];
-    private bool _showSnapshots;
-
-    private async Task LoadSnapshotsAsync()
-    {
-        try
-        {
-            var existing = await LocalStorage.GetItemAsync<List<WorldStateSnapshot>>(SnapshotStorageKey);
-            if (existing != null) _snapshots = existing;
-        }
-        catch { /* ignore */ }
-    }
-
-    private async Task PersistSnapshotsAsync()
-    {
-        try { await LocalStorage.SetItemAsync(SnapshotStorageKey, _snapshots); }
-        catch { /* ignore */ }
-    }
-
-    private async Task SaveSnapshot()
-    {
-        if (WorldState.WorldAgents == null) return;
-        var snap = new WorldStateSnapshot
-        {
-            Name = WorldState.Name ?? $"World {_snapshots.Count + 1}",
-            Description = WorldState.Description,
-            WorldAgents = WorldState.WorldAgents,
-            Rumors = WorldState.Rumors.ToList(),
-            GlobalEvents = WorldState.GlobalEvents.ToList(),
-            RecentActions = WorldState.RecentActions.ToList(),
-            Beats = WorldState.Beats.ToList()
-        };
-        _snapshots.Add(snap);
-        await PersistSnapshotsAsync();
-        _showSnapshots = true;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task LoadSnapshot(Guid id)
-    {
-        var snap = _snapshots.FirstOrDefault(s => s.Id == id);
-        if (snap?.WorldAgents == null) return;
-        WorldState.WorldAgents = snap.WorldAgents;
-        WorldState.Rumors = snap.Rumors ?? [];
-        WorldState.GlobalEvents = snap.GlobalEvents ?? [];
-        WorldState.RecentActions = snap.RecentActions ?? [];
-        WorldState.Beats = snap.Beats ?? [];
-        _showSnapshots = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task DeleteSnapshot(Guid id)
-    {
-        var idx = _snapshots.FindIndex(s => s.Id == id);
-        if (idx >= 0)
-        {
-            _snapshots.RemoveAt(idx);
-            await PersistSnapshotsAsync();
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void ToggleSnapshots() => _showSnapshots = !_showSnapshots;
+    
 
     private bool _minCol1;
     private bool _minCol2;
@@ -215,7 +151,6 @@ public partial class Main
             WorldState.PropertyChanged += HandleWorldStatePropertyChanged;
             NarrativeOrchestration.WriteAgentChatMessage += HandleAgentChatMessageWritten;
             BeatEngine.OnBeat += HandleBeat;
-            await LoadSnapshotsAsync();
             await ResizableGridInterop.InitResizableGrid(_grid);
         }
     }

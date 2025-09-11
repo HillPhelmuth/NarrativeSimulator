@@ -12,34 +12,6 @@
                 </div>
                 <div class="header-right">
                     <div class="header-actions">
-                        <div class="snapshot-group">
-                            <button class="btn btn-secondary" @onclick="SaveSnapshot" title="Save current world state to browser storage">Save</button>
-                            <div class="snapshot-dropdown" @onclick:stopPropagation>
-                                <button class="btn btn-secondary" @onclick="ToggleSnapshots" title="View saved snapshots">Load (@_snapshots.Count)</button>
-                                @if(_showSnapshots)
-                                {
-                                    <div class="snapshot-menu">
-                                        @if(_snapshots.Count == 0)
-                                        {
-                                            <div class="snapshot-empty">No snapshots saved</div>
-                                        }
-                                        else
-                                        {
-                                            @foreach(var s in _snapshots.OrderByDescending(s=>s.CreatedUtc))
-                                            {
-                                                <div class="snapshot-item">
-                                                    <div class="snap-meta" @onclick="(() => LoadSnapshot(s.Id))">
-                                                        <div class="snap-name">@s.Name</div>
-                                                        <div class="snap-time">@s.CreatedUtc.ToLocalTime().ToString("HH:mm:ss")</div>
-                                                    </div>
-                                                    <button class="snap-delete" title="Delete snapshot" @onclick="(() => DeleteSnapshot(s.Id))">×</button>
-                                                </div>
-                                            }
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </div>
                         
                         <button class="btn btn-primary" @onclick="OpenSummaryModal">Generate World Summary</button>
                     </div>

@@ -1,4 +1,5 @@
 ﻿@using System.Linq
+@using NarrativeSimulator.Core.Models
 
 
 @* Parameters *@
@@ -27,7 +28,7 @@
         }
         else
         {
-            @foreach (var action in Actions)
+            @foreach (var action in Actions.Where(x => x.Type != ActionType.Error))
             {
                 <div class="action-card @GetActionTypeClass(action.Type)">
                     <div class="action-icon"></div>

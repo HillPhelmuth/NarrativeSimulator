@@ -78,7 +78,7 @@ public class WorldState : INotifyPropertyChanged
     public void AddRecentAction(WorldAgentAction action)
     {
         _recentActions.Insert(0, action);
-        if (_recentActions.Count > 50)
+        if (_recentActions.Count > 75)
         {
             _recentActions.RemoveAt(_recentActions.Count - 1);
         }
